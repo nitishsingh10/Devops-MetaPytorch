@@ -1,3 +1,14 @@
+---
+title: DevOps Release Commander
+emoji: 🚀
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+tags:
+  - openenv
+---
+
 # DevOps Release Commander (OpenEnv)
 
 On October 4, 2021, a BGP configuration update at Facebook took

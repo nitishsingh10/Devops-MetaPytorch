@@ -25,12 +25,12 @@ from environment import DevOpsReleaseCmdEnv
 # ── Strict env var loading ─────────────────────────────────
 API_BASE_URL = os.getenv("API_BASE_URL")
 MODEL_NAME = os.getenv("MODEL_NAME")
-HF_TOKEN = os.getenv("HF_TOKEN")
+HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
 
 if not API_BASE_URL or not MODEL_NAME or not HF_TOKEN:
     raise ValueError(
         "Missing required environment variables. "
-        "Set: API_BASE_URL, MODEL_NAME, HF_TOKEN"
+        "Set: API_BASE_URL, MODEL_NAME, and HF_TOKEN (or OPENAI_API_KEY)"
     )
 
 

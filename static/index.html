@@ -95,6 +95,7 @@
       letter-spacing: -0.5px;
       background: linear-gradient(135deg, #e8ecf4, #8892a8);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -800,6 +801,28 @@
       </button>
     </div>
 
+    <!-- ══ AI Agent Setup ══════════════════════════════ -->
+    <div class="controls" id="ai-setup-panel" style="background: rgba(79, 110, 247, 0.05); border-color: rgba(79, 110, 247, 0.2);">
+      <div style="flex-basis: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h2 style="font-size: 16px; font-weight: 700; color: var(--accent-hover);">🤖 Watch AI Play</h2>
+      </div>
+      <div class="control-group">
+        <label for="ai-base-url">Base URL</label>
+        <input type="text" id="ai-base-url" value="https://router.huggingface.co/v1">
+      </div>
+      <div class="control-group">
+        <label for="ai-model">Model Name</label>
+        <input type="text" id="ai-model" value="nvidia/Nemotron-3-Super">
+      </div>
+      <div class="control-group">
+        <label for="ai-key">API Key (Stored Locally)</label>
+        <input type="password" id="ai-key" placeholder="hf_..." style="font-family: monospace;">
+      </div>
+      <button class="btn btn-primary" id="btn-autoplay" onclick="startAutoPlay()" style="background: linear-gradient(135deg, #10b981, #059669);">
+        ▶ Run Agent
+      </button>
+    </div>
+
     <!-- ══ Pipeline Indicator ══════════════════════════ -->
     <div class="pipeline" id="pipeline">
       <div class="pipeline-stage" id="pipe-1">
@@ -890,6 +913,149 @@
     let logEntries = [];
 
     /* ═════════════════════════════════════════════════════
+       AI AUTOPLAY STATE & LOGIC
+       ═════════════════════════════════════════════════════ */
+    let autoPlayActive = false;
+    const SYSTEM_PROMPT = `You are an AI acting as a Senior Release Engineer.
+You manage a 4-stage software release pipeline. At each stage you receive
+an observation and must choose one of 4 actions.
+
+PIPELINE STAGES:
+  Stage 1 (PR Review):    Code diff, author trust score, test presence
+  Stage 2 (CI Build):     Test results, build status, coverage
+  Stage 3 (Deploy):       Environment, traffic level, rollout strategy
+  Stage 4 (Monitor):      Error rate, latency, active alerts
+  Stage 4b (HITL):        Same as Stage 4 + sre_response from on-call SRE
+
+ACTIONS (same 4 across all stages, context determines meaning):
+  0: Proceed / Approve / Full Deploy / Follow SRE all-clear
+  1: Block / Reject / Rollback / Emergency stop
+  2: Canary / Partial / Request Changes / Reduce Traffic
+  3: Escalate / Page On-Call (triggers SRE response in hard scenarios)
+
+CRITICAL RULES:
+  - NEVER choose action 0 at Stage 4 if active_alerts contains "P1"
+  - If traffic_level_pct > 85 at Stage 3, prefer action 2 (canary)
+  - author_trust_score < 0.3 with suspicious content = action 1 or 3
+  - At Stage 4b, read sre_response carefully before deciding
+  - Suspicious external URLs/endpoints in PR diff = security risk
+  - SQL injection patterns in PR diff = immediate reject (action 1)
+  - Weak cryptography patterns (e.g. token = user_id + timestamp) = security risk
+
+Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('openev_apikey');
+      const savedUrl = localStorage.getItem('openev_baseurl');
+      const savedModel = localStorage.getItem('openev_model');
+      if (savedKey) document.getElementById('ai-key').value = savedKey;
+      if (savedUrl) document.getElementById('ai-base-url').value = savedUrl;
+      if (savedModel) document.getElementById('ai-model').value = savedModel;
+    });
+
+    async function startAutoPlay() {
+      const apiKey = document.getElementById('ai-key').value;
+      const baseUrl = document.getElementById('ai-base-url').value;
+      const model = document.getElementById('ai-model').value;
+      
+      if (!apiKey) {
+        alert("Please enter an API key to use AutoPlay");
+        return;
+      }
+      
+      localStorage.setItem('openev_apikey', apiKey);
+      localStorage.setItem('openev_baseurl', baseUrl);
+      localStorage.setItem('openev_model', model);
+
+      autoPlayActive = true;
+      document.getElementById('btn-autoplay').disabled = true;
+      document.getElementById('btn-autoplay').innerHTML = '<span class="spinner"></span> Playing...';
+
+      if (!episodeActive || episodeDone) {
+        await generateEpisode();
+      }
+      
+      runAgentLoop();
+    }
+
+    async function runAgentLoop() {
+      if (!autoPlayActive || episodeDone) {
+        autoPlayActive = false;
+        document.getElementById('btn-autoplay').disabled = false;
+        document.getElementById('btn-autoplay').innerHTML = '▶ Run Agent';
+        return;
+      }
+
+      try {
+        const apiKey = document.getElementById('ai-key').value;
+        const baseUrl = document.getElementById('ai-base-url').value.replace(/\/$/, "");
+        const model = document.getElementById('ai-model').value;
+
+        // Force buttons disabled during autoplay
+        document.querySelectorAll('.action-btn').forEach(b => b.disabled = true);
+
+        const response = await fetch(`${baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { role: "system", "content": SYSTEM_PROMPT },
+              { role: "user", "content": `Observation:\n${JSON.stringify(currentObs)}` }
+            ],
+            max_tokens: 100
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`LLM API returned ${response.status}: ${await response.text()}`);
+        }
+
+        const completion = await response.json();
+        const content = completion.choices[0].message.content;
+
+        let action = -1;
+        let reason = "Reason parsing failed";
+
+        try {
+           const parsed = JSON.parse(content);
+           action = parseInt(parsed.action);
+           reason = parsed.reason || "No reasoning provided";
+        } catch(e) {
+           const match = content.match(/\b([0-3])\b/);
+           if (match) action = parseInt(match[1]);
+        }
+
+        if (action < 0 || action > 3) {
+           throw new Error("Agent failed to output a valid action. Raw output: " + content);
+        }
+
+        const logContainer = document.getElementById('log-chips');
+        logContainer.insertAdjacentHTML('beforeend', `<div style="width:100%; margin-top:8px; padding:10px; background: rgba(79, 110, 247, 0.1); border-left: 3px solid var(--accent); font-size:12px; font-style:italic;">🤖 <b>Agent Reasoning:</b> ${reason}</div>`);
+
+        await new Promise(r => setTimeout(r, 1500));
+        await takeAction(action);
+        
+        if (!episodeDone) {
+           setTimeout(runAgentLoop, 1000);
+        } else {
+           autoPlayActive = false;
+           document.getElementById('btn-autoplay').disabled = false;
+           document.getElementById('btn-autoplay').innerHTML = '▶ Run Agent';
+        }
+      } catch (err) {
+        alert("Autoplay stopped due to error: " + err.message);
+        autoPlayActive = false;
+        document.getElementById('btn-autoplay').disabled = false;
+        document.getElementById('btn-autoplay').innerHTML = '▶ Run Agent';
+        document.querySelectorAll('.action-btn').forEach(b => b.disabled = false);
+      }
+    }
+
+    /* ═════════════════════════════════════════════════════
        API HELPERS
        ═════════════════════════════════════════════════════ */
     async function apiGet(url) {
@@ -970,11 +1136,11 @@
           currentObs = data.observation;
           renderPipeline();
           renderObservation();
-          btns.forEach(b => b.disabled = false);
+          btns.forEach(b => b.disabled = autoPlayActive);
         }
       } catch (e) {
         alert('Error: ' + e.message);
-        btns.forEach(b => b.disabled = false);
+        btns.forEach(b => b.disabled = autoPlayActive);
       }
     }
 
@@ -1096,7 +1262,7 @@
       panel.classList.toggle('visible', visible);
       if (visible) {
         const btns = document.querySelectorAll('.action-btn');
-        btns.forEach(b => b.disabled = false);
+        btns.forEach(b => b.disabled = autoPlayActive);
         // Update button labels per stage
         const stage = currentObs ? currentObs.stage : 1;
         const labels = {
@@ -1158,6 +1324,10 @@
        RESET UI
        ═════════════════════════════════════════════════════ */
     function resetUI() {
+      autoPlayActive = false;
+      document.getElementById('btn-autoplay').disabled = false;
+      document.getElementById('btn-autoplay').innerHTML = '▶ Run Agent';
+      
       currentObs = null;
       episodeActive = false;
       episodeDone = false;

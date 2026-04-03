@@ -195,8 +195,8 @@ def main():
     print(f"\n{'=' * 60}")
     print(f"  EVALUATION COMPLETE ({elapsed:.1f}s)")
     print(f"{'=' * 60}")
-    for r in results:
-        print(f"  Task {r['difficulty']} ({r['task']}): {r['reward']}")
+    for i, r in enumerate(results):
+        print(f"  Task {i+1} ({r['task']}): {r['reward']}")
     print(f"{'=' * 60}")
 
 

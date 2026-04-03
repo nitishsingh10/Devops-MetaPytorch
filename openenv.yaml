@@ -17,7 +17,7 @@ description: >
 observation_space:
   type: JSON
   schema:
-    stage:              {type: integer, description: "Pipeline stage 1-4 or 4b"}
+    stage:              {type: object, description: "Pipeline stage 1-4 (int) or '4b' (str) for HITL"}
     difficulty:         {type: integer, description: "1=Easy 2=Medium 3=Hard 4=Nightmare"}
     pr_title:           {type: string}
     pr_diff_summary:    {type: string}

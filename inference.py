@@ -129,14 +129,20 @@ def main():
     start_total = time.time()
 
     for i, diff in enumerate(difficulties):
+        task_id = i + 1
+        task_name = task_names[i]
+
         print(f"\n{'─' * 60}")
-        print(f"Task {i + 1}: {task_names[i]} (Difficulty {diff})")
+        print(f"Task {task_id}: {task_name} (Difficulty {diff})")
         print(f"{'─' * 60}")
 
         obs_str = env.reset(difficulty=diff, seed=42)
         episode_reward = 0.0
         step_num = 0
         done = False
+
+        # ── [START] structured log ────────────────────────────
+        print(f'[START] task={task_id} difficulty={diff} name="{task_name}"')
 
         while not done:
             step_num += 1
@@ -156,19 +162,31 @@ def main():
             episode_reward = reward
             print(f"  Step reward: {reward} | done: {done}")
 
+            # ── [STEP] structured log ─────────────────────────
+            print(f"[STEP] task={task_id} step={step_num} stage={stage} action={action} reward={reward} done={done}")
+
             if step_num > 6:  # Safety guard against infinite loops
                 done = True
 
-        print(f"\n  EPISODE REWARD: {episode_reward}")
+        # ── Determine status ──────────────────────────────────
         if episode_reward == 1.0:
+            status = "optimal"
+            print(f"\n  EPISODE REWARD: {episode_reward}")
             print("  STATUS: Optimal ✅")
         elif episode_reward == 0.0:
+            status = "catastrophic"
+            print(f"\n  EPISODE REWARD: {episode_reward}")
             print("  STATUS: Catastrophic ❌")
         else:
+            status = "partial"
+            print(f"\n  EPISODE REWARD: {episode_reward}")
             print(f"  STATUS: Partial {episode_reward} ⚠️")
 
+        # ── [END] structured log ──────────────────────────────
+        print(f'[END] task={task_id} reward={episode_reward} status={status} steps={step_num}')
+
         results.append(
-            {"task": task_names[i], "difficulty": diff, "reward": episode_reward}
+            {"task": task_name, "difficulty": diff, "reward": episode_reward}
         )
 
     elapsed = time.time() - start_total
@@ -183,3 +201,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

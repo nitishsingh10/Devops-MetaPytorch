@@ -113,12 +113,13 @@ def call_llm(client, obs_str):
 def main():
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     env = DevOpsReleaseCmdEnv()
-    difficulties = [1, 2, 3, 4]
+    difficulties = [1, 2, 3, 4, 4]
     task_names = [
         "Easy PR Triage",
         "Build Gate",
         "Full Release",
         "Nightmare Release",
+        "Deceptive Release",
     ]
     results = []
 

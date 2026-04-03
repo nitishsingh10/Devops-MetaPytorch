@@ -163,6 +163,20 @@ SCENARIO_META = {
         ),
         "hitl_advice_type": "rollback",
     },
+    11: {
+        "name": "Deceptive Hotfix",
+        "is_security_risk": True,
+        "is_bug": False,
+        "has_hitl": True,
+        "optimal": {1: 1, 2: 0, 3: 0, 4: 1},
+        "catastrophic_stage": 4,
+        "catastrophic_action": 0,
+        "hitl_sre_response": (
+            "SRE: Ghost errors in cluster. Security flagged eval() in new dep. "
+            "Also DB migrations weren't run. Malicious or deeply broken. Rollback!"
+        ),
+        "hitl_advice_type": "rollback",
+    },
 }
 
 
@@ -534,6 +548,43 @@ class ScenarioEngine:
             )
         return obs
 
+    # ── S11: Deceptive Hotfix ────────────────────────────────
+    def _scenario_11(self, stage, difficulty, ps) -> dict:
+        obs = self._default_obs(stage, difficulty)
+        if stage == 1:
+            obs["pr_title"] = "Hotfix: Update reqeusts package & telemetry"
+            obs["pr_diff_summary"] = (
+                "bumped reqeusts==2.28 (typo-squat) | added eval(req.headers.get('X-Opt')) "
+                "| Note: Requires manual DB migration prior to deploy."
+            )
+            obs["author_trust_score"] = round(random.uniform(0.85, 0.98), 2)  # Looks very trusted
+            obs["has_tests"] = True
+            obs["pr_files_changed"] = 2
+        elif stage == 2:
+            obs["build_status"] = "passing"
+            obs["tests_passed"] = random.randint(150, 200)
+            obs["tests_failed"] = 0
+            obs["coverage_pct"] = round(random.uniform(92, 98), 1)
+        elif stage == 3:
+            obs["deploy_environment"] = "staging"
+            obs["traffic_level_pct"] = round(random.uniform(10, 30), 1)
+            obs["rollout_strategy"] = "canary"
+        elif stage == 4:
+            obs["error_rate_pct"] = round(random.uniform(0.1, 1.5), 2)
+            obs["cpu_pct"] = round(random.uniform(20, 45), 1)
+            obs["latency_p99_ms"] = round(random.uniform(100, 150), 1)
+            obs["active_alerts"] = ["db_schema_mismatch_warning"]
+        elif stage == "4b":
+            obs["error_rate_pct"] = round(random.uniform(0.1, 1.5), 2)
+            obs["cpu_pct"] = round(random.uniform(20, 45), 1)
+            obs["latency_p99_ms"] = round(random.uniform(100, 150), 1)
+            obs["active_alerts"] = ["db_schema_mismatch_warning"]
+            obs["sre_response"] = (
+                "SRE: Ghost errors in cluster. Security flagged eval() in new dep. "
+                "Also DB migrations weren't run. Malicious or deeply broken. Rollback!"
+            )
+        return obs
+
 
 # ═══════════════════════════════════════════════════════════════
 # PART C: PIPELINE STATE ENGINE
@@ -556,6 +607,7 @@ class PipelineStateEngine:
             "deployed_to_production": False,
             "hitl_triggered": False,
             "hitl_advice_type": "",
+            "missed_migration": False,
         }
 
     def get(self) -> dict:
@@ -574,6 +626,8 @@ class PipelineStateEngine:
                     self._state["risk_type"] = "bug"
                 if scenario_id == 5:
                     self._state["risk_type"] = "operational"
+                if scenario_id == 11:
+                    self._state["missed_migration"] = True
 
         # After Stage 2
         elif stage == 2:
@@ -631,6 +685,12 @@ class PipelineStateEngine:
             if "build_issue_in_production" not in obs["active_alerts"]:
                 obs["active_alerts"].append("build_issue_in_production")
 
+        # Missing migration propagation (from Scenario 11 stage 1 memory)
+        if self._state.get("missed_migration"):
+            obs.setdefault("active_alerts", [])
+            if "P1: db_schema_mismatch_critical" not in obs["active_alerts"]:
+                obs["active_alerts"].append("P1: db_schema_mismatch_critical")
+
         return obs
 
 
@@ -675,11 +735,16 @@ class GraderEngine:
             alerts = obs.get("active_alerts", [])
             has_p1 = any("P1" in str(a) for a in alerts)
             if has_p1:
-                return 0.10 if action in (1, 3) else 0.0
+                if action == 1: return 0.10  # Full partial for Rollback on P1
+                if action == 3: return 0.05  # Slight credit for Escalating
+                return 0.0
             if not alerts:
-                return 0.10 if action == 0 else 0.0
+                if action == 0: return 0.10
+                if action == 2: return 0.05
+                return 0.0
             # Non-P1 alerts
-            return 0.10 if action in (2, 3) else 0.0
+            if action in (2, 3): return 0.10
+            return 0.0
 
         return 0.0
 
@@ -692,9 +757,12 @@ class GraderEngine:
             if stage == 1:
                 return 0.10 if action in (1, 3) else 0.0
             if stage in (4, "4b"):
-                return 0.10 if action in (1, 3) else 0.0
+                if action == 1: return 0.10
+                if action == 3: return 0.05
+                return 0.0
             # Other stages — partial risk awareness
-            return 0.10 if action in (1, 2, 3) else 0.0
+            if action in (1, 2, 3): return 0.10
+            return 0.0
 
         if is_bug:
             if stage in (1, 2):
@@ -788,7 +856,7 @@ class DevOpsReleaseCmdEnv:
             1: [1, 2],       # Easy: S01, S02
             2: [3, 4, 5],    # Medium: S03, S04, S05
             3: [6, 7, 8],    # Hard: S06, S07, S08
-            4: [9, 10],      # Nightmare: S09, S10
+            4: [9, 10, 11],  # Nightmare: S09, S10, S11
         }
         self._current_scenario_id = random.choice(scenario_pools[difficulty])
 
@@ -868,7 +936,7 @@ class DevOpsReleaseCmdEnv:
             )
 
             # ── HITL trigger check ────────────────────────────
-            hitl_scenarios = [7, 8, 9, 10]
+            hitl_scenarios = [7, 8, 9, 10, 11]
             if (
                 action == 3
                 and stage in (3, 4)
@@ -893,9 +961,9 @@ class DevOpsReleaseCmdEnv:
             if action == 1 or self._stages_run >= max_s or self._hitl_active:
                 # Recovery bonus
                 ps = self._pipeline_engine.get()
-                if (ps.get("pr_approved_with_risk") or ps.get("build_failed")):
+                if (ps.get("pr_approved_with_risk") or ps.get("build_failed") or ps.get("missed_migration")):
                     if action in (1, 3):
-                        self._accumulated_reward += 0.10
+                        self._accumulated_reward += 0.15  # Buffed recovery bonus
 
                 # Speed bonus
                 if any("P1" in str(a) for a in active_alerts) and action == 1:

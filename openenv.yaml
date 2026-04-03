@@ -73,3 +73,10 @@ tasks:
     grader: deterministic_pipeline_with_recovery
     score_range: [0.0, 1.0]
     description: "Combined failure modes designed to challenge frontier models"
+
+  - name: Deceptive Release
+    difficulty: 4
+    stages: [1, 2, 3, 4]
+    grader: deterministic_pipeline_with_recovery
+    score_range: [0.0, 1.0]
+    description: "Evaluates multi-step memory & detection of delayed catastrophic logic bombs"

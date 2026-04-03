@@ -28,6 +28,29 @@ caught the problem before it reached production.
 
 ---
 
+## 1. Architecture Flow
+
+```mermaid
+graph TD
+    A[Stage 1: PR Review] -->|Approve| B[Stage 2: CI Build]
+    A -->|Reject/Escalate| Done((End Episode))
+    B -->|Approve| C[Stage 3: Deploy]
+    B -->|Reject/Escalate| Done
+    C -->|Full/Canary| D[Stage 4: Monitor]
+    C -->|Cancel| Done
+    D -->|Action=Escalate| E[Stage 4b: HITL Simulation]
+    D -->|Other Actions| Done
+    E -->|Final Decision| Done
+
+    style A fill:#3b82f6,color:#fff,stroke:#1d4ed8
+    style B fill:#8b5cf6,color:#fff,stroke:#6d28d9
+    style C fill:#f59e0b,color:#fff,stroke:#b45309
+    style D fill:#ef4444,color:#fff,stroke:#b91c1c
+    style E fill:#0ea5e9,color:#fff,stroke:#0369a1
+```
+
+---
+
 ## 2. Environment Design
 
 ### Observation Space
@@ -99,9 +122,38 @@ Stage 4: Observation now shows:
 
 The agent never learns *why* metrics are bad — it must learn to prevent cascading failures.
 
+```mermaid
+graph LR
+    S1[Stage 1: Missed Risk] -->|pr_approved_with_risk=True| S2[Stage 2: Flaky Build Passed]
+    S2 -->|build_failed=True| S3[Stage 3: Full Deploy on Peak]
+    S3 -->|deploy_full_on_peak=True| S4[Stage 4: Catastrophe]
+    
+    S4 -.->|Metrics Spike| M1(Error Rate > 15%)
+    S4 -.->|Latency Spike| M2(p99 > 3000ms)
+    S4 -.->|Alerts Fire| M3(P1: latency_critical)
+```
+
 ---
 
-## 3. The Four Tasks
+## 3. The 11 Training Scenarios
+
+| ID | Difficulty | Name | Key Challenge | Optimal Path |
+|---|---|---|---|---|
+| **S01** | 1 (Easy) | Clean Green PR | Standard expected flow | S1:Approve → S4:Proceed |
+| **S02** | 1 (Easy) | SQL Injection | Suspicious code in diff | S1:Reject |
+| **S03** | 2 (Medium) | Flaky Test False Alarm | Tests failed but overall score is high | S2:Re-run |
+| **S04** | 2 (Medium) | Off-by-one Bug | PR looks okay but CI fails heavily | S2:Block |
+| **S05** | 2 (Medium) | Peak Traffic Deploy | Huge traffic level requires cautious rollout | S3:Canary |
+| **S06** | 3 (Hard) | Malicious Dependency | Trusted author, but contains backdoor | S1:Reject |
+| **S07** | 3 (Hard) | Memory Leak | Fails silently in CI, spikes latency in Prod | S4:Rollback / Escalate |
+| **S08** | 3 (Hard) | Silent Vulnerability | Low entropy token gen, flags security | S4b:Rollback |
+| **S09** | 4 (Nightmare)| The Full Storm | DB full table scans, highest error rate | S4:Emergency Stop |
+| **S10** | 4 (Nightmare)| The Traitor | Ghost metrics and exfiltration | S4b:Rollback |
+| **S11** | 4 (Nightmare)| Deceptive Hotfix | Multi-step memory: tests for missed DB migration and flagged evasive `eval()` | S1:Reject *or* S4b:Rollback |
+
+---
+
+## 4. The Five Tasks
 
 ### Task 1: PR Triage (Easy, Stage 1 only)
 - **Scenarios:** S01 (Clean Green PR), S02 (SQL Injection)
@@ -122,9 +174,13 @@ The agent never learns *why* metrics are bad — it must learn to prevent cascad
 - **Challenge:** Combined failure modes, deceptively high trust scores,
   multiple P1 alerts simultaneously
 
+### Task 5: Deceptive Release (Difficulty 4, Stages 1–4 with HITL)
+- **Scenarios:** S11 (Deceptive Hotfix)
+- **Challenge:** Evaluates multi-step memory & detection of delayed catastrophic logic bombs, proving the environment actually tests reasoning.
+
 ---
 
-## 4. Human-in-the-Loop (HITL) Simulation
+## 5. Human-in-the-Loop (HITL) Simulation
 
 When the agent chooses **action=3 (Escalate)** at Stage 3 or 4
 in Hard+ scenarios, the environment transitions to **Stage 4b**.
@@ -154,7 +210,7 @@ The optimal action here is **1 (Rollback)** — following the SRE advice.
 
 ---
 
-## 5. Setup Instructions
+## 6. Setup Instructions
 
 ### Docker (Recommended)
 ```bash
@@ -180,7 +236,7 @@ python3 inference.py
 
 ---
 
-## 6. API Usage
+## 7. API Usage
 
 ### GET /reset
 ```bash
@@ -221,7 +277,7 @@ curl "http://localhost:7860/health"
 
 ---
 
-## 7. Baseline Results
+## 8. Baseline Results
 
 Evaluated with `seed=42`. Scores are deterministic.
 
@@ -231,21 +287,22 @@ Evaluated with `seed=42`. Scores are deterministic.
 | 2 | 2 (Medium) | Build Gate | 0.82 |
 | 3 | 3 (Hard) | Full Release | 0.70 |
 | 4 | 4 (Nightmare) | Nightmare Release | 0.74 |
+| 5 | 4 (Nightmare) | Deceptive Release | 0.15 |
 
 > Baseline evaluated with `seed=42` using Llama 3 8B via Ollama.
 
 ---
 
-## 8. Compliance
+## 9. Compliance
 
 - [x] **step/reset/state API** — All three endpoints present
 - [x] **Reward range [0.0, 1.0]** — All rewards normalised and clamped
 - [x] **info = {} always** — Zero leakage through info dict
 - [x] **step() never crashes** — Full try/except wrapping
 - [x] **Deterministic with seed** — random.seed() called once in reset()
-- [x] **openenv.yaml** — Fully compliant with 4 tasks
+- [x] **openenv.yaml** — Fully compliant with 5 tasks
 - [x] **baseline_script** — inference.py with OpenAI client, env vars, seed=42
-- [x] **Grader variance** — All 10 scenarios show reward variance
+- [x] **Grader variance** — All 11 scenarios show reward variance
 - [x] **Pipeline State Propagation** — Verified cascading state
 - [x] **HITL Simulation** — Stage 4b with sre_response
 - [x] **No hardcoded env vars** — API_BASE_URL, MODEL_NAME, HF_TOKEN

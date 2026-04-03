@@ -1,0 +1,162 @@
+================================================================
+  DEVOPS RELEASE COMMANDER — MISSING REQUIREMENTS
+  Team: CTL+ALT+DEL
+  Generated: 2026-04-03
+================================================================
+
+Below are the gaps between your current project and the
+hackathon requirements from the Scaler/Meta PyTorch OpenEnv
+Hackathon dashboard. Fix these before April 8th submission.
+
+================================================================
+  CRITICAL (Must fix — will cause disqualification / auto-fail)
+================================================================
+
+1. HUGGING FACE SPACES DEPLOYMENT
+   ────────────────────────────────
+   Status:  NOT DONE
+   Why:     Phase 1 automated gate requires your HF Space to
+            be reachable and respond to reset() with 200 OK.
+            Without this, your project will not be evaluated.
+
+   What to do:
+   - Create a new Space on huggingface.co/spaces
+   - Set the Space SDK to "Docker"
+   - Tag the Space with "openenv"
+   - Push your project files (Dockerfile, main.py, environment.py,
+     inference.py, openenv.yaml, requirements.txt, static/)
+   - Verify the Space builds and the /reset endpoint responds
+
+   Test after deploy:
+     curl "https://<your-space>.hf.space/reset?difficulty=1&seed=42"
+     # Should return 200 with JSON observation
+
+
+2. OPENAI_API_KEY ENVIRONMENT VARIABLE FALLBACK
+   ──────────────────────────────────────────────
+   Status:  NOT DONE
+   Why:     The hackathon spec says the baseline inference script
+            should read API credentials from OPENAI_API_KEY.
+            Your inference.py only reads HF_TOKEN. Judges may
+            inject OPENAI_API_KEY instead, causing your script
+            to crash with "Missing required environment variables".
+
+   What to fix in inference.py (line 28):
+   
+   CURRENT:
+     HF_TOKEN = os.getenv("HF_TOKEN")
+
+   CHANGE TO:
+     HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
+
+   Also update the error message on line 30-34 to mention both
+   variable names.
+
+
+================================================================
+  IMPORTANT (Should fix — affects scoring)
+================================================================
+
+3. HF SPACE "openenv" TAG
+   ────────────────────────
+   Status:  NOT DONE (depends on #1)
+   Why:     The hackathon requires HF Spaces to be tagged with
+            "openenv" for discoverability during judging.
+
+   What to do:
+   - In HF Space settings, add the tag "openenv"
+   - Also add in your README.md YAML header on HF:
+       tags:
+         - openenv
+
+
+4. DOCKER BUILD TIME VERIFICATION
+   ────────────────────────────────
+   Status:  NOT VERIFIED
+   Why:     Code quality criterion says Dockerfile must build
+            and run in under 5 minutes.
+
+   What to do:
+   - Run: time docker build -t devops-release-commander .
+   - Run: time docker run -p 7860:7860 devops-release-commander
+   - Verify total time < 5 minutes
+   - If slow, consider adding --no-cache-dir (already present)
+     and minimizing COPY layers
+
+
+5. INFERENCE.PY END-TO-END TEST ON HF
+   ─────────────────────────────────────
+   Status:  NOT DONE (depends on #1)
+   Why:     Baseline Reproduction gate requires inference.py to
+            run without error and produce scores on the deployed
+            environment. Must verify this works on HF, not just
+            locally.
+
+   What to do:
+   - Set env vars: API_BASE_URL, MODEL_NAME, HF_TOKEN
+   - Run inference.py against the deployed HF Space
+   - Verify it produces the same baseline scores as local
+
+
+================================================================
+  NICE TO HAVE (Could improve score but not required)
+================================================================
+
+6. OPENENV VALIDATE COMMAND
+   ─────────────────────────
+   Status:  NOT RUN
+   Why:     Spec compliance scoring mentions "openenv validate"
+            tool. Running it would catch any edge cases.
+
+   What to do:
+   - pip install openenv (if available)
+   - Run: openenv validate openenv.yaml
+   - Fix any warnings
+
+
+7. HF SPACE README (SEPARATE FROM PROJECT README)
+   ─────────────────────────────────────────────────
+   Status:  NOT CREATED
+   Why:     HF Spaces have their own README format with YAML
+            frontmatter for metadata.
+
+   What to create (README.md for HF Space):
+   ---
+   title: DevOps Release Commander
+   emoji: 🚀
+   colorFrom: blue
+   colorTo: green
+   sdk: docker
+   app_port: 7860
+   tags:
+     - openenv
+   ---
+   # DevOps Release Commander
+   (rest of your README content)
+
+
+================================================================
+  SUMMARY
+================================================================
+
+  CRITICAL BLOCKERS:     2  (HF deploy, OPENAI_API_KEY fallback)
+  IMPORTANT ITEMS:       3  (tag, docker time, e2e test)
+  NICE TO HAVE:          2  (openenv validate, HF README)
+
+  EVERYTHING ELSE:       ✅ PASSING
+  - OpenEnv spec compliance
+  - 4 tasks with graders (exceeds 3-task minimum)
+  - Pydantic typed models
+  - Reward function [0.0, 1.0] with partial signals
+  - Determinism with seed=42
+  - Crash safety (step never raises)
+  - info={} always (zero leakage)
+  - Catastrophic condition handling
+  - HITL simulation
+  - Pipeline state propagation
+  - Grader variance (all 10 scenarios)
+  - Dockerfile present
+  - openenv.yaml present
+  - inference.py in root
+  - Comprehensive README
+

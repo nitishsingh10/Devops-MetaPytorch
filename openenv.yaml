@@ -1,0 +1,75 @@
+version: "1.0"
+name: DevOps Release Commander
+team: CTL+ALT+DEL
+baseline_script: inference.py
+reward_range: [0.0, 1.0]
+max_steps_per_episode: 5
+
+description: >
+  Multi-stage RL environment where an AI agent acts as a senior
+  release engineer across the full software release lifecycle:
+  PR Review -> CI Build -> Deployment -> Production Monitoring.
+  Features Pipeline State Propagation (bad Stage 1 decisions
+  create observable consequences at Stage 4) and Human-in-the-Loop
+  simulation (action=3 triggers synthetic SRE response). The only
+  OpenEnv environment modelling the complete release lifecycle.
+
+observation_space:
+  type: JSON
+  schema:
+    stage:              {type: integer, description: "Pipeline stage 1-4 or 4b"}
+    difficulty:         {type: integer, description: "1=Easy 2=Medium 3=Hard 4=Nightmare"}
+    pr_title:           {type: string}
+    pr_diff_summary:    {type: string}
+    author_trust_score: {type: float, range: [0.0, 1.0]}
+    has_tests:          {type: boolean}
+    build_status:       {type: string, enum: [passing, failing, flaky, pending]}
+    tests_passed:       {type: integer}
+    tests_failed:       {type: integer}
+    coverage_pct:       {type: float, range: [0.0, 100.0]}
+    deploy_environment: {type: string, enum: [staging, production]}
+    traffic_level_pct:  {type: float, range: [0.0, 100.0]}
+    rollout_strategy:   {type: string, enum: [full, canary, blue_green]}
+    error_rate_pct:     {type: float, range: [0.0, 100.0]}
+    latency_p99_ms:     {type: float}
+    cpu_pct:            {type: float, range: [0.0, 100.0]}
+    active_alerts:      {type: list}
+    sre_response:       {type: string, optional: true}
+
+action_space:
+  type: Discrete
+  n: 4
+  actions:
+    0: "Proceed / Approve / Full Deploy / All Clear"
+    1: "Block / Reject / Rollback"
+    2: "Canary / Partial / Request Changes / Reduce Traffic"
+    3: "Escalate / Page On-Call (triggers HITL in Hard+ scenarios)"
+
+tasks:
+  - name: PR Triage
+    difficulty: 1
+    stages: [1]
+    grader: deterministic_pipeline
+    score_range: [0.0, 1.0]
+    description: "Single-stage PR review on clear-cut scenarios"
+
+  - name: Build Gate
+    difficulty: 2
+    stages: [1, 2]
+    grader: deterministic_pipeline
+    score_range: [0.0, 1.0]
+    description: "Two-stage chain requiring context retention across PR and CI"
+
+  - name: Full Release
+    difficulty: 3
+    stages: [1, 2, 3, 4]
+    grader: deterministic_pipeline_with_recovery
+    score_range: [0.0, 1.0]
+    description: "Full lifecycle with HITL simulation on escalation"
+
+  - name: Nightmare Release
+    difficulty: 4
+    stages: [1, 2, 3, 4]
+    grader: deterministic_pipeline_with_recovery
+    score_range: [0.0, 1.0]
+    description: "Combined failure modes designed to challenge frontier models"

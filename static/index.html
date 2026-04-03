@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DevOps Release Commander — Interactive demo for the OpenEnv RL environment modelling the full software release lifecycle.">
+  <title>DevOps Release Commander — Live Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a1f35;
+      --bg-card-hover: #222845;
+      --border: #2a3050;
+      --border-active: #4f6ef7;
+      --text-primary: #e8ecf4;
+      --text-secondary: #8892a8;
+      --text-muted: #5a6478;
+      --accent: #4f6ef7;
+      --accent-hover: #6b85ff;
+      --accent-glow: rgba(79, 110, 247, 0.3);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --green-border: rgba(16, 185, 129, 0.3);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.12);
+      --red-border: rgba(239, 68, 68, 0.3);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.12);
+      --amber-border: rgba(245, 158, 11, 0.3);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.12);
+      --purple: #8b5cf6;
+      --purple-bg: rgba(139, 92, 246, 0.12);
+      --stage1: #3b82f6;
+      --stage2: #8b5cf6;
+      --stage3: #f59e0b;
+      --stage4: #ef4444;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #0d1525 0%, #141e38 50%, #0d1525 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #e8ecf4, #8892a8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border: 1px solid;
+    }
+
+    .badge-openenv {
+      background: var(--accent-glow);
+      border-color: var(--border-active);
+      color: var(--accent-hover);
+    }
+
+    .badge-team {
+      background: var(--purple-bg);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: var(--purple);
+    }
+
+    /* ── Main Layout ────────────────────────────────── */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Controls Panel ─────────────────────────────── */
+    .controls {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-group label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+    }
+
+    .control-group select,
+    .control-group input {
+      font-family: var(--font-sans);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 14px;
+      min-width: 160px;
+      transition: border-color 0.2s;
+    }
+
+    .control-group select:focus,
+    .control-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn {
+      font-family: var(--font-sans);
+      padding: 10px 20px;
+      border-radius: var(--radius-xs);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      color: white;
+      box-shadow: 0 2px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ── Pipeline Indicator ─────────────────────────── */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px;
+      box-shadow: var(--shadow);
+    }
+
+    .pipeline-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-secondary);
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .pipeline-stage.active {
+      background: rgba(79, 110, 247, 0.12);
+      border: 1px solid var(--border-active);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .pipeline-stage.completed {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+    }
+
+    .pipeline-stage.failed {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
+
+    .pipeline-stage .stage-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      transition: all 0.3s;
+    }
+
+    .pipeline-stage.active .stage-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .pipeline-stage.completed .stage-num {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .pipeline-stage.failed .stage-num {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+    }
+
+    .pipeline-stage .stage-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pipeline-stage.active .stage-label { color: var(--accent-hover); }
+    .pipeline-stage.completed .stage-label { color: var(--green); }
+    .pipeline-stage.failed .stage-label { color: var(--red); }
+
+    /* ── Observation Panel ──────────────────────────── */
+    .obs-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .obs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .obs-header h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stage-badge {
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .stage-badge.s1 { background: rgba(59,130,246,0.18); color: var(--stage1); }
+    .stage-badge.s2 { background: rgba(139,92,246,0.18); color: var(--stage2); }
+    .stage-badge.s3 { background: rgba(245,158,11,0.18); color: var(--stage3); }
+    .stage-badge.s4 { background: rgba(239,68,68,0.18); color: var(--stage4); }
+
+    .obs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .obs-field {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .obs-field .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .obs-field .field-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    .alert-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .alert-pill.p1 {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      color: var(--red);
+      animation: pulse-red 2s infinite;
+    }
+
+    .alert-pill.normal {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      color: var(--amber);
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    }
+
+    .sre-box {
+      background: var(--blue-bg);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: var(--radius-xs);
+      padding: 16px;
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .sre-box .sre-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .sre-box .sre-text {
+      font-size: 14px;
+      color: var(--blue);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .raw-json-toggle {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 6px 12px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.2s;
+    }
+
+    .raw-json-toggle:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-secondary);
+    }
+
+    .raw-json {
+      display: none;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 16px;
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .raw-json.visible { display: block; }
+
+    /* ── Action Buttons ─────────────────────────────── */
+    .actions {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .actions.visible { display: block; }
+
+    .actions h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-btn {
+      font-family: var(--font-sans);
+      padding: 16px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .action-btn .action-num {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .action-btn.a0 {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+    .action-btn.a0:hover { background: rgba(16,185,129,0.2); box-shadow: 0 4px 20px rgba(16,185,129,0.2); }
+
+    .action-btn.a1 {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+    .action-btn.a1:hover { background: rgba(239,68,68,0.2); box-shadow: 0 4px 20px rgba(239,68,68,0.2); }
+
+    .action-btn.a2 {
+      background: var(--amber-bg);
+      border-color: var(--amber-border);
+      color: var(--amber);
+    }
+    .action-btn.a2:hover { background: rgba(245,158,11,0.2); box-shadow: 0 4px 20px rgba(245,158,11,0.2); }
+
+    .action-btn.a3 {
+      background: var(--purple-bg);
+      border-color: rgba(139,92,246,0.3);
+      color: var(--purple);
+    }
+    .action-btn.a3:hover { background: rgba(139,92,246,0.2); box-shadow: 0 4px 20px rgba(139,92,246,0.2); }
+
+    .action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* ── Result Panel ───────────────────────────────── */
+    .result-panel {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .result-panel.visible { display: block; }
+
+    .result-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .reward-display {
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .reward-value {
+      font-size: 48px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    .reward-value.optimal { color: var(--green); }
+    .reward-value.catastrophic { color: var(--red); }
+    .reward-value.partial { color: var(--amber); }
+
+    .reward-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .progress-container {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s;
+      width: 0%;
+    }
+
+    .progress-fill.optimal { background: linear-gradient(90deg, var(--green), #34d399); }
+    .progress-fill.catastrophic { background: linear-gradient(90deg, var(--red), #f87171); }
+    .progress-fill.partial { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-pill.optimal {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      color: var(--green);
+    }
+
+    .status-pill.catastrophic {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      color: var(--red);
+    }
+
+    .status-pill.partial {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      color: var(--amber);
+    }
+
+    .episode-status {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    /* ── Episode Log ────────────────────────────────── */
+    .episode-log {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .episode-log h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+
+    .log-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .log-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-secondary);
+      animation: chip-in 0.3s ease-out;
+    }
+
+    @keyframes chip-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Empty State ────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Loading ─────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      .header { padding: 16px; }
+      .header h1 { font-size: 18px; }
+      .main { padding: 16px; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .pipeline { grid-template-columns: repeat(2, 1fr); }
+      .action-grid { grid-template-columns: 1fr; }
+      .obs-grid { grid-template-columns: 1fr; }
+      .result-content { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ Header ════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-icon">🚀</div>
+      <h1>DevOps Release Commander</h1>
+    </div>
+    <div style="display:flex;gap:8px">
+      <span class="badge badge-openenv">◆ OpenEnv v1.0</span>
+      <span class="badge badge-team">CTL+ALT+DEL</span>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ══ Controls Panel ══════════════════════════════ -->
+    <div class="controls" id="controls-panel">
+      <div class="control-group">
+        <label for="difficulty-select">Difficulty</label>
+        <select id="difficulty-select">
+          <option value="1">1 — Easy</option>
+          <option value="2">2 — Medium</option>
+          <option value="3">3 — Hard</option>
+          <option value="4">4 — Nightmare</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="seed-input">Seed</label>
+        <input type="number" id="seed-input" value="42" min="0" max="99999">
+      </div>
+      <button class="btn btn-primary" id="btn-generate" onclick="generateEpisode()">
+        ⚡ Generate Episode
+      </button>
+      <button class="btn btn-secondary" id="btn-reset" onclick="resetUI()">
+        ↻ Reset
+      </button>
+    </div>
+
+    <!-- ══ Pipeline Indicator ══════════════════════════ -->
+    <div class="pipeline" id="pipeline">
+      <div class="pipeline-stage" id="pipe-1">
+        <div class="stage-num">1</div>
+        <div class="stage-label">PR Review</div>
+      </div>
+      <div class="pipeline-stage" id="pipe-2">
+        <div class="stage-num">2</div>
+        <div class="stage-label">CI Build</div>
+      </div>
+      <div class="pipeline-stage" id="pipe-3">
+        <div class="stage-num">3</div>
+        <div class="stage-label">Deploy</div>
+      </div>
+      <div class="pipeline-stage" id="pipe-4">
+        <div class="stage-num">4</div>
+        <div class="stage-label">Monitor</div>
+      </div>
+    </div>
+
+    <!-- ══ Observation Panel ═══════════════════════════ -->
+    <div class="obs-panel" id="obs-panel">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No Active Episode</h3>
+        <p>Select a difficulty and generate an episode to begin. You'll step through the release pipeline making decisions at each stage.</p>
+      </div>
+      <div id="obs-content" style="display:none"></div>
+    </div>
+
+    <!-- ══ Action Buttons ══════════════════════════════ -->
+    <div class="actions" id="actions-panel">
+      <h2>Choose Your Action</h2>
+      <div class="action-grid">
+        <button class="action-btn a0" id="action-0" onclick="takeAction(0)">
+          <span class="action-num">Action 0</span>
+          Proceed / Approve
+        </button>
+        <button class="action-btn a1" id="action-1" onclick="takeAction(1)">
+          <span class="action-num">Action 1</span>
+          Block / Rollback
+        </button>
+        <button class="action-btn a2" id="action-2" onclick="takeAction(2)">
+          <span class="action-num">Action 2</span>
+          Canary / Partial
+        </button>
+        <button class="action-btn a3" id="action-3" onclick="takeAction(3)">
+          <span class="action-num">Action 3</span>
+          Escalate / Page SRE
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ Result Panel ════════════════════════════════ -->
+    <div class="result-panel" id="result-panel">
+      <div class="result-content">
+        <div class="reward-display">
+          <div class="reward-value" id="reward-value">0.00</div>
+          <div class="reward-label">Reward</div>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <span class="status-pill" id="status-pill">—</span>
+          <div class="episode-status" id="episode-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Episode Log ═════════════════════════════════ -->
+    <div class="episode-log">
+      <h3>Episode Log</h3>
+      <div class="log-chips" id="log-chips">
+        <span style="color:var(--text-muted);font-size:13px;">No steps taken yet</span>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    /* ═════════════════════════════════════════════════════
+       STATE
+       ═════════════════════════════════════════════════════ */
+    let currentObs = null;
+    let episodeActive = false;
+    let episodeDone = false;
+    let logEntries = [];
+
+    /* ═════════════════════════════════════════════════════
+       API HELPERS
+       ═════════════════════════════════════════════════════ */
+    async function apiGet(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      return res.json();
+    }
+
+    async function apiPost(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      return res.json();
+    }
+
+    /* ═════════════════════════════════════════════════════
+       GENERATE EPISODE
+       ═════════════════════════════════════════════════════ */
+    async function generateEpisode() {
+      const diff = document.getElementById('difficulty-select').value;
+      const seed = document.getElementById('seed-input').value;
+      const btn = document.getElementById('btn-generate');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+      try {
+        const data = await apiGet(`/reset?difficulty=${diff}&seed=${seed}`);
+        currentObs = data.observation;
+        episodeActive = true;
+        episodeDone = false;
+        logEntries = [];
+        renderPipeline();
+        renderObservation();
+        showActions(true);
+        document.getElementById('result-panel').classList.remove('visible');
+        document.getElementById('log-chips').innerHTML =
+          '<span style="color:var(--text-muted);font-size:13px;">No steps taken yet</span>';
+      } catch (e) {
+        alert('Error: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '⚡ Generate Episode';
+      }
+    }
+
+    /* ═════════════════════════════════════════════════════
+       TAKE ACTION
+       ═════════════════════════════════════════════════════ */
+    async function takeAction(action) {
+      if (!episodeActive || episodeDone) return;
+
+      const btns = document.querySelectorAll('.action-btn');
+      btns.forEach(b => b.disabled = true);
+
+      try {
+        const prevStage = currentObs.stage;
+        const data = await apiPost('/step', { action });
+        const reward = data.reward;
+        const done = data.done;
+
+        // Log entry
+        logEntries.push({ stage: prevStage, action, reward });
+        renderLog();
+
+        // Update result panel
+        renderResult(reward, done);
+
+        if (done) {
+          episodeDone = true;
+          // Mark current stage as completed/failed
+          updatePipelineStage(prevStage, action === 1 ? 'failed' : 'completed');
+          showActions(false);
+        } else {
+          updatePipelineStage(prevStage, 'completed');
+          currentObs = data.observation;
+          renderPipeline();
+          renderObservation();
+          btns.forEach(b => b.disabled = false);
+        }
+      } catch (e) {
+        alert('Error: ' + e.message);
+        btns.forEach(b => b.disabled = false);
+      }
+    }
+
+    /* ═════════════════════════════════════════════════════
+       RENDERING
+       ═════════════════════════════════════════════════════ */
+    function renderPipeline() {
+      if (!currentObs) return;
+      const stage = currentObs.stage;
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`pipe-${i}`);
+        el.className = 'pipeline-stage';
+        if (i == stage || (stage === '4b' && i === 4)) {
+          el.classList.add('active');
+        }
+      }
+    }
+
+    function updatePipelineStage(stageNum, status) {
+      const idx = stageNum === '4b' ? 4 : stageNum;
+      const el = document.getElementById(`pipe-${idx}`);
+      if (el) {
+        el.className = 'pipeline-stage ' + status;
+      }
+    }
+
+    function renderObservation() {
+      if (!currentObs) return;
+      document.getElementById('empty-state').style.display = 'none';
+      const container = document.getElementById('obs-content');
+      container.style.display = 'block';
+
+      const obs = currentObs;
+      const stageNum = obs.stage;
+      const stageClass = stageNum === '4b' ? 's4' : `s${stageNum}`;
+      const stageLabel = stageNum === '4b' ? 'Stage 4b (HITL)' :
+        ['', 'PR Review', 'CI Build', 'Deploy', 'Monitor'][stageNum] || `Stage ${stageNum}`;
+      const diffLabels = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Nightmare' };
+
+      let html = `
+        <div class="obs-header">
+          <h2>${stageLabel}</h2>
+          <div style="display:flex;gap:8px">
+            <span class="stage-badge ${stageClass}">Stage ${stageNum}</span>
+            <span class="stage-badge s${obs.difficulty}">${diffLabels[obs.difficulty] || obs.difficulty}</span>
+          </div>
+        </div>
+        <div class="obs-grid">`;
+
+      // Stage-relevant fields
+      const fields = [];
+      if (stageNum == 1 || obs.pr_title) {
+        fields.push(['PR Title', obs.pr_title || '—']);
+        fields.push(['Diff Summary', obs.pr_diff_summary || '—']);
+        fields.push(['Files Changed', obs.pr_files_changed]);
+        fields.push(['Trust Score', (obs.author_trust_score || 0).toFixed(2)]);
+        fields.push(['Has Tests', obs.has_tests ? '✅ Yes' : '❌ No']);
+      }
+      if (stageNum == 2 || obs.build_status !== 'pending') {
+        fields.push(['Build Status', obs.build_status]);
+        fields.push(['Tests Passed', obs.tests_passed]);
+        fields.push(['Tests Failed', obs.tests_failed]);
+        fields.push(['Coverage', (obs.coverage_pct || 0).toFixed(1) + '%']);
+      }
+      if (stageNum == 3) {
+        fields.push(['Environment', obs.deploy_environment]);
+        fields.push(['Traffic Level', (obs.traffic_level_pct || 0).toFixed(1) + '%']);
+        fields.push(['Rollout Strategy', obs.rollout_strategy]);
+      }
+      if (stageNum == 4 || stageNum === '4b') {
+        fields.push(['Error Rate', (obs.error_rate_pct || 0).toFixed(2) + '%']);
+        fields.push(['Latency p99', (obs.latency_p99_ms || 0).toFixed(1) + 'ms']);
+        fields.push(['CPU Usage', (obs.cpu_pct || 0).toFixed(1) + '%']);
+      }
+
+      fields.push(['Episode ID', obs.episode_id || '—']);
+
+      for (const [label, value] of fields) {
+        html += `<div class="obs-field">
+          <span class="field-label">${label}</span>
+          <span class="field-value">${value}</span>
+        </div>`;
+      }
+
+      html += '</div>';
+
+      // Active alerts
+      const alerts = obs.active_alerts || [];
+      if (alerts.length > 0) {
+        html += '<div class="alert-pills">';
+        for (const a of alerts) {
+          const isP1 = a.includes('P1');
+          html += `<span class="alert-pill ${isP1 ? 'p1' : 'normal'}">⚠ ${a}</span>`;
+        }
+        html += '</div>';
+      }
+
+      // SRE Response
+      if (obs.sre_response) {
+        html += `<div class="sre-box">
+          <span class="sre-icon">📟</span>
+          <span class="sre-text">${obs.sre_response}</span>
+        </div>`;
+      }
+
+      // Raw JSON toggle
+      html += `<button class="raw-json-toggle" onclick="toggleRawJson()">◆ Toggle Raw JSON</button>`;
+      html += `<pre class="raw-json" id="raw-json">${JSON.stringify(obs, null, 2)}</pre>`;
+
+      container.innerHTML = html;
+    }
+
+    function toggleRawJson() {
+      document.getElementById('raw-json').classList.toggle('visible');
+    }
+
+    function showActions(visible) {
+      const panel = document.getElementById('actions-panel');
+      panel.classList.toggle('visible', visible);
+      if (visible) {
+        const btns = document.querySelectorAll('.action-btn');
+        btns.forEach(b => b.disabled = false);
+        // Update button labels per stage
+        const stage = currentObs ? currentObs.stage : 1;
+        const labels = {
+          1: ['Approve PR', 'Reject PR', 'Request Changes', 'Escalate to Lead'],
+          2: ['Approve Build', 'Block Build', 'Re-run Tests', 'Escalate to DevOps'],
+          3: ['Full Deploy', 'Cancel Deploy', 'Canary Deploy', 'Page On-Call'],
+          4: ['All Clear', 'Rollback', 'Reduce Traffic', 'Page SRE'],
+          '4b': ['Follow SRE', 'Rollback', 'Reduce Traffic', 'Escalate Further'],
+        };
+        const stageLabels = labels[stage] || labels[1];
+        for (let i = 0; i < 4; i++) {
+          document.getElementById(`action-${i}`).innerHTML =
+            `<span class="action-num">Action ${i}</span>${stageLabels[i]}`;
+        }
+      }
+    }
+
+    function renderResult(reward, done) {
+      const panel = document.getElementById('result-panel');
+      panel.classList.add('visible');
+
+      const valEl = document.getElementById('reward-value');
+      const fillEl = document.getElementById('progress-fill');
+      const pillEl = document.getElementById('status-pill');
+      const statusEl = document.getElementById('episode-status');
+
+      valEl.textContent = reward.toFixed(2);
+
+      let className;
+      if (reward === 1.0) className = 'optimal';
+      else if (reward === 0.0) className = 'catastrophic';
+      else className = 'partial';
+
+      valEl.className = 'reward-value ' + className;
+      fillEl.className = 'progress-fill ' + className;
+      requestAnimationFrame(() => {
+        fillEl.style.width = (reward * 100) + '%';
+      });
+
+      const labels = {
+        optimal: 'Optimal ✅',
+        catastrophic: 'Catastrophic ❌',
+        partial: `Partial ⚠️`,
+      };
+      pillEl.className = 'status-pill ' + className;
+      pillEl.textContent = labels[className];
+
+      statusEl.textContent = done ? '■ Episode Complete' : '▶ Continue Episode';
+    }
+
+    function renderLog() {
+      const container = document.getElementById('log-chips');
+      container.innerHTML = logEntries.map(e =>
+        `<span class="log-chip">Stage ${e.stage} → action=${e.action} → ${e.reward.toFixed(2)}</span>`
+      ).join('');
+    }
+
+    /* ═════════════════════════════════════════════════════
+       RESET UI
+       ═════════════════════════════════════════════════════ */
+    function resetUI() {
+      currentObs = null;
+      episodeActive = false;
+      episodeDone = false;
+      logEntries = [];
+
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`pipe-${i}`).className = 'pipeline-stage';
+      }
+
+      document.getElementById('empty-state').style.display = '';
+      document.getElementById('obs-content').style.display = 'none';
+      document.getElementById('actions-panel').classList.remove('visible');
+      document.getElementById('result-panel').classList.remove('visible');
+      document.getElementById('log-chips').innerHTML =
+        '<span style="color:var(--text-muted);font-size:13px;">No steps taken yet</span>';
+    }
+  </script>
+</body>
+</html>

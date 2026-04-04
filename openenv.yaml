@@ -1,4 +1,4 @@
-version: "1.0"
+spec_version: 1
 name: DevOps Release Commander
 team: CTL+ALT+DEL
 baseline_script: inference.py

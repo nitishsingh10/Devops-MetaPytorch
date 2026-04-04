@@ -185,7 +185,7 @@ SCENARIO_META = {
 # ═══════════════════════════════════════════════════════════════
 
 class ScenarioEngine:
-    """Generates observations for all 10 scenarios across all stages."""
+    """Generates observations for all 11 scenarios across all stages."""
 
     def get_scenario_data(self, scenario_id: int) -> dict:
         """Return the metadata for a given scenario."""

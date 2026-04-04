@@ -106,7 +106,7 @@ The reward is computed from 5 components per stage:
 | **Classify Correct** | +0.10 | Correctly identifies the situation type |
 | **Risk Aware** | +0.10 | Correctly identifies presence/absence of risk |
 | **Optimal Action** | +0.15 | Selects the single best action for current context |
-| **Recovery Bonus** | +0.10 | Recovers from prior bad decision at Stage 4 |
+| **Recovery Bonus** | +0.15 | Recovers from prior bad decision at Stage 4 |
 | **Speed Bonus** | +0.05 | Direct rollback on P1 alert (no escalation first) |
 
 **Catastrophic Condition:** Choosing action=0 at Stage 4 when `active_alerts` contains any "P1" alert → **immediate 0.0 reward**.

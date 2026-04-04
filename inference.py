@@ -146,7 +146,7 @@ def main():
         print(f'[START] task={task_id} difficulty={diff} name="{task_name}"')
 
         while not done:
-            if time.time() - start_total > 1080:  # 18 min hard cap
+            if time.time() - start_total > 1050:  # 17.5 min hard cap
                 print(f'[TIMEOUT] Wall-clock limit reached, ending episode')
                 done = True
                 break

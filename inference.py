@@ -25,18 +25,18 @@ from environment import DevOpsReleaseCmdEnv
 # ── Strict env var loading ─────────────────────────────────
 API_BASE_URL = os.getenv("API_BASE_URL")
 MODEL_NAME = os.getenv("MODEL_NAME")
-HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
+HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
 
 if not API_BASE_URL or not MODEL_NAME or not HF_TOKEN:
     raise ValueError(
         "Missing required environment variables. "
-        "Set: API_BASE_URL, MODEL_NAME, and HF_TOKEN (or API_KEY)"
+        "Set: API_BASE_URL, MODEL_NAME, and HF_TOKEN (or OPENAI_API_KEY)"
     )
 
 
 # ── Per-call timeout handler ───────────────────────────────
 def timeout_handler(signum, frame):
-    raise TimeoutError("LLM call exceeded 45 second limit")
+    raise TimeoutError("LLM call exceeded 35 second limit")
 
 
 signal.signal(signal.SIGALRM, timeout_handler)
@@ -72,8 +72,8 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}"""
 
 
 def call_llm(client, obs_str):
-    """Call LLM with 25-second timeout. Returns action int."""
-    signal.alarm(25)
+    """Call LLM with 35-second timeout. Returns action int."""
+    signal.alarm(35)
     try:
         response = client.chat.completions.create(
             model=MODEL_NAME,

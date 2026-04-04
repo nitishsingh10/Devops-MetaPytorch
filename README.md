@@ -26,6 +26,15 @@ caught the problem before it reached production.
 
 **The DevOps Release Commander is that agent's training ground.**
 
+## What Makes This Environment Unique
+
+**Human-in-the-Loop (HITL) Simulation — Stage 4b**
+When an agent escalates (action=3) at Stage 3 or 4 in Hard+ scenarios,
+the environment does NOT terminate. Instead it injects a synthetic
+on-call SRE response into the observation. The agent must then decide
+whether to follow the expert or override — testing judgment under
+authority, not just pattern matching. No other OpenEnv environment has this.
+
 ---
 
 ## 1. Architecture Flow

@@ -72,8 +72,8 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}"""
 
 
 def call_llm(client, obs_str):
-    """Call LLM with 45-second timeout. Returns action int."""
-    signal.alarm(45)
+    """Call LLM with 25-second timeout. Returns action int."""
+    signal.alarm(25)
     try:
         response = client.chat.completions.create(
             model=MODEL_NAME,
@@ -146,6 +146,11 @@ def main():
         print(f'[START] task={task_id} difficulty={diff} name="{task_name}"')
 
         while not done:
+            if time.time() - start_total > 1080:  # 18 min hard cap
+                print(f'[TIMEOUT] Wall-clock limit reached, ending episode')
+                done = True
+                break
+                
             step_num += 1
             obs = json.loads(obs_str)
             stage = obs.get("stage", "?")

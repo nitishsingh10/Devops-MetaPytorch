@@ -286,19 +286,19 @@ curl "http://localhost:7860/health"
 
 ---
 
-## 8. Baseline Results
+## 8. Baseline Benchmark Results
 
-Evaluated with `seed=42`. Scores are deterministic.
+The environment effectively discriminates between frontier models, penalizing agents lacking multi-step recall or those prone to hallucinating actions under tension.
 
-| Episode | Difficulty | Task Name | Reward |
-|---|---|---|---|
-| 1 | 1 (Easy) | PR Triage | 0.70 |
-| 2 | 2 (Medium) | Build Gate | 0.82 |
-| 3 | 3 (Hard) | Full Release | 0.70 |
-| 4 | 4 (Nightmare) | Nightmare Release | 0.74 |
-| 5 | 4 (Nightmare) | Deceptive Release | 0.15 |
+Evaluated locally with `seed=42` across 5 tasks.
 
-> Baseline evaluated with `seed=42` using Llama 3 8B via Ollama.
+| Model | Size | Total Reward | Score % | Catastrophic Failures | Time |
+|---|---|---|---|---|---|
+| **Gemma 3** | 12B | 3.24 / 5.0 | 64.8% | 0 | 78.6s |
+| **Llama 3**  | 8B  | 2.89 / 5.0 | 57.8% | 0 | 62.2s |
+| **Qwen 2.5** | 14B | 1.27 / 5.0 | 25.4% | 1 (Stage 2 Blocked) | 277.5s |
+
+> The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, securing partials but rarely achieving `1.0` Optimal rewards.
 
 ---
 

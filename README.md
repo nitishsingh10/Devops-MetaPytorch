@@ -300,6 +300,13 @@ Evaluated locally with `seed=42` across 5 tasks.
 
 > The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, securing partials but rarely achieving `1.0` Optimal rewards.
 
+Key observations:
+- All models score 0.70 on Easy PR Triage — consistent baseline floor
+- qwen:14b scores catastrophic (0.0) on Build Gate, then anchors at 0.19 — 
+  demonstrates the environment penalises wrong reasoning, not just wrong answers
+- Harder tasks (Nightmare, Deceptive) separate strong from weak models
+- gemma3:12b leads despite being smaller than qwen:14b — prompt-following matters more than size
+
 ---
 
 ## 9. Compliance
@@ -316,3 +323,4 @@ Evaluated locally with `seed=42` across 5 tasks.
 - [x] **HITL Simulation** — Stage 4b with sre_response
 - [x] **No hardcoded env vars** — API_BASE_URL, MODEL_NAME, HF_TOKEN
   from os.getenv() only
+- [x] **Multi-model validation** — Benchmarked across gemma3:12b, llama3, qwen:14b

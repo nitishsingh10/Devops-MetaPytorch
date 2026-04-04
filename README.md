@@ -28,7 +28,8 @@ caught the problem before it reached production.
 
 ## What Makes This Environment Unique
 
-**Human-in-the-Loop (HITL) Simulation — Stage 4b**
+### Human-in-the-Loop (HITL) Simulation — Stage 4b
+
 When an agent escalates (action=3) at Stage 3 or 4 in Hard+ scenarios,
 the environment does NOT terminate. Instead it injects a synthetic
 on-call SRE response into the observation. The agent must then decide

@@ -992,9 +992,14 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
     });
 
     async function startAutoPlay() {
-      const apiKey = document.getElementById('ai-key').value;
-      const baseUrl = document.getElementById('ai-base-url').value;
-      const model = document.getElementById('ai-model').value;
+      let apiKey = document.getElementById('ai-key').value;
+      let baseUrl = document.getElementById('ai-base-url').value;
+      let model = document.getElementById('ai-model').value;
+      
+      // Sanitize inputs to prevent trailing spaces or accidental brackets from copy-pasting
+      apiKey = apiKey.trim().replace(/[{}]/g, '');
+      baseUrl = baseUrl.trim().replace(/[{}]/g, '');
+      model = model.trim().replace(/[{}]/g, '');
       
       if (!apiKey) {
         alert("Please enter an API key to use AutoPlay");
@@ -1025,9 +1030,9 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       }
 
       try {
-        const apiKey = document.getElementById('ai-key').value;
-        const baseUrl = document.getElementById('ai-base-url').value.replace(/\/$/, "");
-        const model = document.getElementById('ai-model').value;
+        let apiKey = document.getElementById('ai-key').value.trim().replace(/[{}]/g, '');
+        let baseUrl = document.getElementById('ai-base-url').value.trim().replace(/[{}]/g, '').replace(/\/$/, "");
+        let model = document.getElementById('ai-model').value.trim().replace(/[{}]/g, '');
 
         // Force buttons disabled during autoplay
         document.querySelectorAll('.action-btn').forEach(b => b.disabled = true);

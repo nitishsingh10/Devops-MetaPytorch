@@ -295,18 +295,18 @@ Evaluated locally with `seed=42` across 5 tasks.
 
 | Model | Size | Total Reward | Score % | Catastrophic Failures | Time |
 |---|---|---|---|---|---|
+| **Llama-3.3 (Groq)** | 70B | 3.33 / 5.0 | 66.6% | 0 | 1.8s |
 | **Gemma 3** | 12B | 3.24 / 5.0 | 64.8% | 0 | 78.6s |
-| **Llama 3**  | 8B  | 2.89 / 5.0 | 57.8% | 0 | 62.2s |
 | **Qwen 2.5** | 14B | 1.27 / 5.0 | 25.4% | 1 (Stage 2 Blocked) | 277.5s |
 
-> The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, securing partials but rarely achieving `1.0` Optimal rewards.
+> The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, securing partials but rarely achieving `1.0` Optimal rewards. By contrast, massive models like Llama 3.3 70B successfully detect security traps in the PR diff and reject them instantly protecting the environment.
 
 Key observations:
-- All models score 0.70 on Easy PR Triage — consistent baseline floor
+- Strong models score stable ~0.66 baselines by aggressively blocking risks.
 - qwen:14b scores catastrophic (0.0) on Build Gate, then anchors at 0.19 — 
   demonstrates the environment penalises wrong reasoning, not just wrong answers
 - Harder tasks (Nightmare, Deceptive) separate strong from weak models
-- gemma3:12b leads despite being smaller than qwen:14b — prompt-following matters more than size
+- Fast architectures (Groq) can blaze through standard OpenEnv transitions in less than 2 seconds!
 
 ---
 

@@ -313,6 +313,9 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 24px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
       box-shadow: var(--shadow);
     }
 
@@ -669,6 +672,8 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 20px 24px;
+      max-height: 350px;
+      overflow-y: auto;
       box-shadow: var(--shadow);
     }
 
@@ -772,9 +777,11 @@
     </div>
     <div style="display:flex;gap:8px">
       <span class="badge badge-openenv">◆ OpenEnv v1.0</span>
-      <span class="badge badge-team">CTL+ALT+DEL</span>
+      <span class="badge badge-team" style="cursor:pointer;" onclick="location.reload()" title="Click to hard refresh">CTL+ALT+DEL</span>
     </div>
   </header>
+
+  <div id="toast-container" style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 12px; align-items: center; pointer-events: none; width: 100%;"></div>
 
   <main class="main">
 
@@ -905,6 +912,37 @@
 
   <script>
     /* ═════════════════════════════════════════════════════
+       TOAST UTILITY
+       ═════════════════════════════════════════════════════ */
+    function showToast(msg, isError = true) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.style.padding = '18px 32px';
+      toast.style.background = isError ? 'var(--red-bg)' : 'var(--green-bg)';
+      toast.style.border = `2px solid ${isError ? 'var(--red-border)' : 'var(--green-border)'}`;
+      toast.style.color = isError ? 'var(--red)' : 'var(--green)';
+      toast.style.borderRadius = 'var(--radius)';
+      toast.style.boxShadow = '0 10px 40px rgba(0,0,0,0.5)';
+      toast.style.fontSize = '18px';
+      toast.style.fontWeight = '800';
+      toast.style.letterSpacing = '0.5px';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-20px)';
+      toast.style.transition = 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+      toast.innerHTML = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 400);
+      }, 5000);
+    }
+
+    /* ═════════════════════════════════════════════════════
        STATE
        ═════════════════════════════════════════════════════ */
     let currentObs = null;
@@ -969,7 +1007,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
       autoPlayActive = true;
       document.getElementById('btn-autoplay').disabled = true;
-      document.getElementById('btn-autoplay').innerHTML = '<span class="spinner"></span> Playing...';
+      document.getElementById('btn-autoplay').innerHTML = '<span class="spinner"></span> Generating Agent Thoughts...';
 
       if (!episodeActive || episodeDone) {
         await generateEpisode();
@@ -1053,7 +1091,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
            document.getElementById('btn-autoplay').innerHTML = '▶ Run Agent';
         }
       } catch (err) {
-        alert("Autoplay stopped due to error: " + err.message);
+        showToast("Autoplay stopped due to error: " + err.message);
         autoPlayActive = false;
         document.getElementById('btn-autoplay').disabled = false;
         document.getElementById('btn-autoplay').innerHTML = '▶ Run Agent';
@@ -1103,7 +1141,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         document.getElementById('log-chips').innerHTML =
           '<span style="color:var(--text-muted);font-size:13px;">No steps taken yet</span>';
       } catch (e) {
-        alert('Error: ' + e.message);
+        showToast('Error: ' + e.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = '⚡ Generate Episode';
@@ -1145,7 +1183,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
           btns.forEach(b => b.disabled = autoPlayActive);
         }
       } catch (e) {
-        alert('Error: ' + e.message);
+        showToast('Error: ' + e.message);
         btns.forEach(b => b.disabled = autoPlayActive);
       }
     }
@@ -1352,7 +1390,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         document.getElementById(`pipe-${i}`).className = 'pipeline-stage';
       }
 
-      document.getElementById('empty-state').style.display = '';
+      document.getElementById('empty-state').style.display = 'flex';
       document.getElementById('obs-content').style.display = 'none';
       document.getElementById('actions-panel').classList.remove('visible');
       document.getElementById('result-panel').classList.remove('visible');

@@ -324,4 +324,4 @@ Key observations:
 - [x] **HITL Simulation** — Stage 4b with sre_response
 - [x] **No hardcoded env vars** — API_BASE_URL, MODEL_NAME, HF_TOKEN
   from os.getenv() only
-- [x] **Multi-model validation** — Benchmarked across gemma3:12b, llama3, qwen:14b
+- [x] **Multi-model validation** — Benchmarked natively across `llama-3.3-70b` (HF/Groq), `mistral-large`, `gemma3:12b`, and `qwen:14b`

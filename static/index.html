@@ -1021,7 +1021,16 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         let reason = "Reason parsing failed";
 
         try {
-           const parsed = JSON.parse(content);
+           // Strip markdown formatting if present
+           let cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
+           // Find the first { and last } to isolate json payload
+           const firstBrace = cleanContent.indexOf('{');
+           const lastBrace = cleanContent.lastIndexOf('}');
+           if (firstBrace !== -1 && lastBrace !== -1) {
+             cleanContent = cleanContent.substring(firstBrace, lastBrace + 1);
+           }
+           
+           const parsed = JSON.parse(cleanContent);
            action = parseInt(parsed.action);
            reason = parsed.reason || "No reasoning provided";
         } catch(e) {
@@ -1152,7 +1161,9 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       const stage = currentObs.stage;
       for (let i = 1; i <= 4; i++) {
         const el = document.getElementById(`pipe-${i}`);
-        el.className = 'pipeline-stage';
+        // Remove 'active' class without overwriting 'completed'/'failed'
+        el.classList.remove('active');
+        
         if (i == stage || (stage === '4b' && i === 4)) {
           el.classList.add('active');
         }

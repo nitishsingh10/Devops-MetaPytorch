@@ -35,14 +35,9 @@ def test_grader_variance():
         rewards = []
 
         for action in [0, 1, 2, 3]:
-            import random
-            random.seed(42)
-            env._current_difficulty = diff
+            env.reset(difficulty=diff, seed=42)
+            # Override the randomly selected scenario with the specific test scenario
             env._current_scenario_id = scenario_id
-            env._pipeline_engine.reset()
-            env._accumulated_reward = 0.0
-            env._stages_run = 0
-            env._hitl_active = False
             env._current_stage = 1
             env._generate_observation(stage=1)
 
@@ -125,13 +120,10 @@ def test_hitl_triggered_on_action_3():
 
     env = DevOpsReleaseCmdEnv()
     print("Running HITL trigger test...")
-    random.seed(42)
-    env._current_difficulty = 3
+    env.reset(difficulty=3, seed=42)
+    
+    # Fast-forward to Stage 4 Memory Leak scenario
     env._current_scenario_id = 7  # S07 — Memory Leak
-    env._pipeline_engine.reset()
-    env._accumulated_reward = 0.0
-    env._stages_run = 0
-    env._hitl_active = False
     env._current_stage = 4
     env._generate_observation(stage=4)
     # Force alerts to not be P1 so we don't hit catastrophic

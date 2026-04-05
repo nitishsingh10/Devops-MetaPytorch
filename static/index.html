@@ -1042,11 +1042,8 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
            throw new Error("Agent failed to output a valid action. Raw output: " + content);
         }
 
-        const logContainer = document.getElementById('log-chips');
-        logContainer.insertAdjacentHTML('beforeend', `<div style="width:100%; margin-top:8px; padding:10px; background: rgba(79, 110, 247, 0.1); border-left: 3px solid var(--accent); font-size:12px; font-style:italic;">🤖 <b>Agent Reasoning:</b> ${reason}</div>`);
-
         await new Promise(r => setTimeout(r, 1500));
-        await takeAction(action);
+        await takeAction(action, reason);
         
         if (!episodeDone) {
            setTimeout(runAgentLoop, 1000);
@@ -1116,7 +1113,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
     /* ═════════════════════════════════════════════════════
        TAKE ACTION
        ═════════════════════════════════════════════════════ */
-    async function takeAction(action) {
+    async function takeAction(action, reason = null) {
       if (!episodeActive || episodeDone) return;
 
       const btns = document.querySelectorAll('.action-btn');
@@ -1129,7 +1126,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         const done = data.done;
 
         // Log entry
-        logEntries.push({ stage: prevStage, action, reward });
+        logEntries.push({ stage: prevStage, action, reward, reason });
         renderLog();
 
         // Update result panel
@@ -1326,9 +1323,16 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
     function renderLog() {
       const container = document.getElementById('log-chips');
-      container.innerHTML = logEntries.map(e =>
-        `<span class="log-chip">Stage ${e.stage} → action=${e.action} → ${e.reward.toFixed(2)}</span>`
-      ).join('');
+      let html = '';
+      logEntries.forEach(e => {
+        html += `<div style="margin-bottom: 8px;">`;
+        html += `<span class="log-chip">Stage ${e.stage} → action=${e.action} → ${e.reward.toFixed(2)}</span>`;
+        if (e.reason) {
+          html += `<div style="width:100%; margin-top:4px; padding:8px 12px; background: rgba(79, 110, 247, 0.1); border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0; font-size:13px; font-style:italic;">🤖 <b>Agent Reasoning:</b> ${e.reason}</div>`;
+        }
+        html += `</div>`;
+      });
+      container.innerHTML = html;
     }
 
     /* ═════════════════════════════════════════════════════

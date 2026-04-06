@@ -138,12 +138,13 @@ def main():
         print(f"{'─' * 60}")
 
         obs_str = env.reset(difficulty=diff, seed=42)
-        episode_reward = 0.0
         step_num = 0
         done = False
+        step_rewards = []
+        safe_task_name = task_name.replace(" ", "_").lower()
 
         # ── [START] structured log ────────────────────────────
-        print(f'[START] task={task_id} difficulty={diff} name="{task_name}"')
+        print(f"[START] task={safe_task_name} env=devops_release_commander model={MODEL_NAME}", flush=True)
 
         while not done:
             if time.time() - start_total > 1050:  # 17.5 min hard cap
@@ -165,34 +166,40 @@ def main():
             print(f"  Action: {action}")
 
             obs_str, reward, done, info = env.step(action)
-            episode_reward = reward
+            step_rewards.append(float(reward))
             print(f"  Step reward: {reward} | done: {done}")
 
             # ── [STEP] structured log ─────────────────────────
-            print(f"[STEP] task={task_id} step={step_num} stage={stage} action={action} reward={reward} done={done}")
+            done_val = str(done).lower()
+            print(f"[STEP] step={step_num} action={action} reward={reward:.2f} done={done_val} error=null", flush=True)
 
             if step_num > 6:  # Safety guard against infinite loops
                 done = True
 
         # ── Determine status ──────────────────────────────────
-        if episode_reward == 1.0:
+        final_score = step_rewards[-1] if step_rewards else 0.0
+        final_score = min(max(final_score, 0.0), 1.0)
+        
+        if final_score == 1.0:
             status = "optimal"
-            print(f"\n  EPISODE REWARD: {episode_reward}")
+            print(f"\n  EPISODE REWARD: {final_score}")
             print("  STATUS: Optimal ✅")
-        elif episode_reward == 0.0:
+        elif final_score == 0.0:
             status = "catastrophic"
-            print(f"\n  EPISODE REWARD: {episode_reward}")
+            print(f"\n  EPISODE REWARD: {final_score}")
             print("  STATUS: Catastrophic ❌")
         else:
             status = "partial"
-            print(f"\n  EPISODE REWARD: {episode_reward}")
-            print(f"  STATUS: Partial {episode_reward} ⚠️")
+            print(f"\n  EPISODE REWARD: {final_score}")
+            print(f"  STATUS: Partial {final_score} ⚠️")
 
         # ── [END] structured log ──────────────────────────────
-        print(f'[END] task={task_id} reward={episode_reward} status={status} steps={step_num}')
+        success_val = "true" if final_score > 0.0 else "false"
+        rewards_str = ",".join(f"{r:.2f}" for r in step_rewards)
+        print(f"[END] success={success_val} steps={step_num} score={final_score:.2f} rewards={rewards_str}", flush=True)
 
         results.append(
-            {"task": task_name, "difficulty": diff, "reward": episode_reward}
+            {"task": task_name, "difficulty": diff, "reward": final_score}
         )
 
     elapsed = time.time() - start_total

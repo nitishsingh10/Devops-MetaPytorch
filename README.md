@@ -282,6 +282,7 @@ curl -X POST "http://localhost:7860/step" \
 ```bash
 open http://localhost:7860
 ```
+> **Cinematic Intelligence Dashboard:** The frontend features a beautiful dark-mode glassmorphic interface built to emulate premium SRE command centers. It actively renders a **Live Telemetry Chart** graphing CPU and Latency metrics sequentially across the pipeline, while an asynchronous **Typewriter Engine** physically writes out the LLM's reasoning protocols step-by-step.
 
 ### GET /health
 ```bash
@@ -322,7 +323,7 @@ Key observations:
 - [x] **Deterministic with seed** — random.seed() called once in reset()
 - [x] **openenv.yaml** — Fully compliant with 5 tasks
 - [x] **baseline_script** — inference.py with OpenAI client, env vars, seed=42
-- [x] **Grader variance** — All 11 scenarios show reward variance
+- [x] **Grader variance** — All 14 scenarios show reward variance
 - [x] **Pipeline State Propagation** — Verified cascading state
 - [x] **HITL Simulation** — Stage 4b with sre_response
 - [x] **No hardcoded env vars** — API_BASE_URL, MODEL_NAME, HF_TOKEN

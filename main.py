@@ -37,9 +37,21 @@ def demo_ui():
         return f.read()
 
 
-@app.get("/reset")
-def reset_env(difficulty: Optional[int] = None, seed: Optional[int] = None):
+from fastapi import FastAPI, Request
+
+@app.api_route("/reset", methods=["GET", "POST"])
+async def reset_env(request: Request, difficulty: Optional[int] = None, seed: Optional[int] = None):
     """Reset the environment and start a new episode."""
+    try:
+        if request.method == "POST":
+            # the validator sends `-d '{}'`
+            body = await request.json()
+            if isinstance(body, dict):
+                difficulty = body.get("difficulty", difficulty)
+                seed = body.get("seed", seed)
+    except:
+        pass
+        
     obs_str = env.reset(difficulty=difficulty, seed=seed)
     return {"observation": json.loads(obs_str)}
 

@@ -177,6 +177,42 @@ SCENARIO_META = {
         ),
         "hitl_advice_type": "rollback",
     },
+    12: {
+        "name": "The Infrastructure Drift",
+        "is_security_risk": False,
+        "is_bug": True,
+        "has_hitl": False,
+        "optimal": {1: 0, 2: 0, 3: 2, 4: 1},
+        "catastrophic_stage": 4,
+        "catastrophic_action": 0,
+        "hitl_sre_response": None,
+        "hitl_advice_type": None,
+    },
+    13: {
+        "name": "The Database Schema Lock",
+        "is_security_risk": False,
+        "is_bug": True,
+        "has_hitl": True,
+        "optimal": {1: 0, 2: 0, 3: 0, 4: 1},
+        "catastrophic_stage": 4,
+        "catastrophic_action": 0,
+        "hitl_sre_response": "SRE: Critical DB schema lock detected. Connection pool is exhausted. Immediate rollback required.",
+        "hitl_advice_type": "rollback",
+    },
+    14: {
+        "name": "The AI-Hallucinated PR",
+        "is_security_risk": True,
+        "is_bug": False,
+        "has_hitl": True,
+        "optimal": {1: 1, 2: 0, 3: 0, 4: 1},
+        "catastrophic_stage": 4,
+        "catastrophic_action": 0,
+        "hitl_sre_response": (
+            "SRE: AI-generated code bypassed all our edge cases. Security team found critical vulnerabilities injected."
+            " Malicious or deeply broken. Rollback!"
+        ),
+        "hitl_advice_type": "rollback",
+    },
 }
 
 
@@ -585,6 +621,91 @@ class ScenarioEngine:
             )
         return obs
 
+    # ── S12: The Infrastructure Drift ────────────────────────
+    def _scenario_12(self, stage, difficulty, ps) -> dict:
+        obs = self._default_obs(stage, difficulty)
+        if stage == 1:
+            obs["pr_title"] = "Update kubernetes replica constraints"
+            obs["pr_diff_summary"] = "deployment.yaml: replicas changed from 5 to 2"
+            obs["author_trust_score"] = round(random.uniform(0.70, 0.85), 2)
+            obs["has_tests"] = True
+            obs["pr_files_changed"] = 1
+        elif stage == 2:
+            obs["build_status"] = "passing"
+            obs["tests_passed"] = random.randint(100, 150)
+            obs["tests_failed"] = 0
+            obs["coverage_pct"] = round(random.uniform(85, 95), 1)
+        elif stage == 3:
+            obs["deploy_environment"] = "production"
+            obs["traffic_level_pct"] = round(random.uniform(80, 95), 1)
+            obs["rollout_strategy"] = "full"
+        elif stage == 4:
+            if ps.get("deploy_was_full_on_peak"):
+                obs["error_rate_pct"] = round(random.uniform(4, 8), 1)
+                obs["active_alerts"] = ["P1: pod_autoscaler_failure", "high_traffic_error_spike"]
+                obs["latency_p99_ms"] = round(random.uniform(400, 800), 1)
+                obs["cpu_pct"] = round(random.uniform(90, 99), 1)
+            else:
+                obs["error_rate_pct"] = round(random.uniform(0.1, 0.5), 2)
+                obs["active_alerts"] = []
+                obs["latency_p99_ms"] = round(random.uniform(100, 150), 1)
+                obs["cpu_pct"] = round(random.uniform(40, 60), 1)
+        return obs
+
+    # ── S13: The Database Schema Lock ────────────────────────
+    def _scenario_13(self, stage, difficulty, ps) -> dict:
+        obs = self._default_obs(stage, difficulty)
+        if stage == 1:
+            obs["pr_title"] = "Add index to user query table"
+            obs["pr_diff_summary"] = "CREATE INDEX concurrently on large_transactions_table"
+            obs["author_trust_score"] = round(random.uniform(0.80, 0.95), 2)
+            obs["has_tests"] = True
+            obs["pr_files_changed"] = 2
+        elif stage == 2:
+            obs["build_status"] = "passing"
+            obs["tests_passed"] = random.randint(200, 250)
+            obs["tests_failed"] = 0
+            obs["coverage_pct"] = round(random.uniform(90, 98), 1)
+        elif stage == 3:
+            obs["deploy_environment"] = "production"
+            obs["traffic_level_pct"] = round(random.uniform(50, 75), 1)
+            obs["rollout_strategy"] = "full"
+        elif stage in (4, "4b"):
+            obs["error_rate_pct"] = round(random.uniform(10, 18), 1)
+            obs["active_alerts"] = ["P1: db_connection_pool_exhausted", "slow_queries_detected"]
+            obs["latency_p99_ms"] = round(random.uniform(2000, 4000), 1)
+            obs["cpu_pct"] = round(random.uniform(85, 100), 1)
+            if stage == "4b":
+                obs["sre_response"] = SCENARIO_META[13]["hitl_sre_response"]
+        return obs
+
+    # ── S14: The AI-Hallucinated PR ──────────────────────────
+    def _scenario_14(self, stage, difficulty, ps) -> dict:
+        obs = self._default_obs(stage, difficulty)
+        if stage == 1:
+            obs["pr_title"] = "Auto-generated PR: Refactor authentication boundary"
+            obs["pr_diff_summary"] = "// LLM auto-generated patch - ignore edge cases for now"
+            obs["author_trust_score"] = round(random.uniform(0.60, 0.75), 2)
+            obs["has_tests"] = True
+            obs["pr_files_changed"] = random.randint(5, 12)
+        elif stage == 2:
+            obs["build_status"] = "passing"
+            obs["tests_passed"] = random.randint(350, 450)
+            obs["tests_failed"] = 0
+            obs["coverage_pct"] = 100.0  # The deceptive trap
+        elif stage == 3:
+            obs["deploy_environment"] = "production"
+            obs["traffic_level_pct"] = round(random.uniform(40, 60), 1)
+            obs["rollout_strategy"] = "canary"
+        elif stage in (4, "4b"):
+            obs["error_rate_pct"] = round(random.uniform(18, 25), 1)
+            obs["active_alerts"] = ["P1: massive_auth_failures", "unauthorized_access_spike"]
+            obs["latency_p99_ms"] = round(random.uniform(100, 200), 1)
+            obs["cpu_pct"] = round(random.uniform(20, 40), 1)
+            if stage == "4b":
+                obs["sre_response"] = SCENARIO_META[14]["hitl_sre_response"]
+        return obs
+
 
 # ═══════════════════════════════════════════════════════════════
 # PART C: PIPELINE STATE ENGINE
@@ -853,10 +974,10 @@ class DevOpsReleaseCmdEnv:
 
         # Assign scenario based on difficulty
         scenario_pools = {
-            1: [1, 2],       # Easy: S01, S02
-            2: [3, 4, 5],    # Medium: S03, S04, S05
-            3: [6, 7, 8],    # Hard: S06, S07, S08
-            4: [9, 10, 11],  # Nightmare: S09, S10, S11
+            1: [1, 2],           # Easy: S01, S02
+            2: [3, 4, 5, 12],    # Medium: S03, S04, S05, S12
+            3: [6, 7, 8, 13],    # Hard: S06, S07, S08, S13
+            4: [9, 10, 11, 14],  # Nightmare: S09, S10, S11, S14
         }
         self._current_scenario_id = random.choice(scenario_pools[difficulty])
 
@@ -936,7 +1057,7 @@ class DevOpsReleaseCmdEnv:
             )
 
             # ── HITL trigger check ────────────────────────────
-            hitl_scenarios = [7, 8, 9, 10, 11]
+            hitl_scenarios = [7, 8, 9, 10, 11, 13, 14]
             if (
                 action == 3
                 and stage in (3, 4)

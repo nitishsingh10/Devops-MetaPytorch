@@ -26,11 +26,12 @@ def test_grader_variance():
         3: 2, 4: 2, 5: 2,
         6: 3, 7: 3, 8: 3,
         9: 4, 10: 4, 11: 4,
+        12: 2, 13: 3, 14: 4,
     }
 
     print("Running grader variance test...")
 
-    for scenario_id in range(1, 12):
+    for scenario_id in range(1, 15):
         diff = scenario_difficulty_map[scenario_id]
         rewards = []
 
@@ -56,7 +57,7 @@ def test_grader_variance():
     print()
     if all_passed:
         print("GRADER VARIANCE TEST: PASSED ✅")
-        print("All 11 scenarios show reward variance — safe to submit.")
+        print("All 14 scenarios show reward variance — safe to submit.")
     else:
         print("GRADER VARIANCE TEST: FAILED ❌")
         print("STOP — do not submit. Fix grader variance before proceeding.")

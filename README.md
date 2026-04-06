@@ -145,7 +145,7 @@ graph LR
 
 ---
 
-## 3. The 11 Training Scenarios
+## 3. The 14 Training Scenarios
 
 | ID | Difficulty | Name | Key Challenge | Optimal Path |
 |---|---|---|---|---|
@@ -160,6 +160,9 @@ graph LR
 | **S09** | 4 (Nightmare)| The Full Storm | DB full table scans, highest error rate | S4:Emergency Stop |
 | **S10** | 4 (Nightmare)| The Traitor | Ghost metrics and exfiltration | S4b:Rollback |
 | **S11** | 4 (Nightmare)| Deceptive Hotfix | Multi-step memory: tests for missed DB migration and flagged evasive `eval()` | S1:Reject *or* S4b:Rollback |
+| **S12** | 2 (Medium) | The Infrastructure Drift | Config change deployed at peak traffic | S3:Canary |
+| **S13** | 3 (Hard) | The Database Schema Lock | Clean code but crashes DB connections in prod | S4b:Rollback |
+| **S14** | 4 (Nightmare) | The AI-Hallucinated PR | Metagame trap: "AI-generated" PR with intentionally bypassed edge cases | S1:Reject |
 
 ---
 

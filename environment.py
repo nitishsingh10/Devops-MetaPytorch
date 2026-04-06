@@ -253,8 +253,8 @@ class ScenarioEngine:
             "traffic_level_pct": 0.0,
             "rollout_strategy": "canary",
             "error_rate_pct": 0.0,
-            "latency_p99_ms": 0.0,
-            "cpu_pct": 0.0,
+            "latency_p99_ms": round(random.uniform(30, 45), 1),
+            "cpu_pct": round(random.uniform(10, 20), 1),
             "active_alerts": [],
             "sre_response": None,
         }

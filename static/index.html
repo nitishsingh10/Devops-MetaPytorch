@@ -1269,9 +1269,9 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         episodeActive = true;
         episodeDone = false;
         logEntries = [];
-        // Reset telemetry data for a new pipeline run
-        cpuData = [0, 0, 0, 0];
-        latencyData = [0, 0, 0, 0];
+        // Reset telemetry data while keeping array reference intact for Chart.js
+        cpuData.fill(0);
+        latencyData.fill(0);
         if (telemetryChart) telemetryChart.update();
         
         renderPipeline();

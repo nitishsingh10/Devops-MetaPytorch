@@ -158,7 +158,7 @@ def main():
         final_score = min(max(final_score, 0.0), 1.0)
 
         # ── [END] structured log ──────────────────────────────
-        success_val = "false" if is_timeout else "true"
+        success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 and not is_timeout else "false"
         rewards_str = ",".join(f"{r:.2f}" for r in step_rewards)
         print(f"[END] success={success_val} steps={step_num} rewards={rewards_str}", flush=True)
 

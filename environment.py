@@ -988,6 +988,9 @@ class DevOpsReleaseCmdEnv:
 
     def _generate_observation(self, stage):
         """Generate and store observation for the given stage."""
+        stage_num = 5 if stage == "4b" else int(stage)
+        random.seed(self._current_seed + stage_num)
+        
         pipeline_state = self._pipeline_engine.get()
         obs_dict = self._scenario_engine.generate(
             self._current_scenario_id,
@@ -1000,7 +1003,7 @@ class DevOpsReleaseCmdEnv:
         obs_dict["stage"] = stage
         obs_dict["difficulty"] = self._current_difficulty
         obs_dict["episode_id"] = (
-            f"diff{self._current_difficulty}_s{self._current_scenario_id:02d}_seed"
+            f"diff{self._current_difficulty}_s{self._current_scenario_id:02d}_seed{self._current_seed}"
         )
         self._current_obs = obs_dict
 

@@ -1,5 +1,6 @@
 FROM python:3.11-slim
 
+ENV PYTHONUNBUFFERED=1
 RUN useradd -m -u 1000 user
 
 WORKDIR /app

@@ -119,7 +119,7 @@ def main():
         task_id = i + 1
         task_name = task_names[i]
 
-        obs_str = env.reset(difficulty=diff, seed=42)
+        obs_str = env.reset(difficulty=diff, seed=42 + i)
         step_num = 0
         done = False
         step_rewards = []

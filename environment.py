@@ -1080,17 +1080,18 @@ class DevOpsReleaseCmdEnv:
             #   all stages complete
             #   HITL stage just resolved
             if action == 1 or self._stages_run >= max_s or self._hitl_active:
+                bonus = 0.0
                 # Recovery bonus
                 ps = self._pipeline_engine.get()
                 if (ps.get("pr_approved_with_risk") or ps.get("build_failed") or ps.get("missed_migration")):
                     if action in (1, 3):
-                        self._accumulated_reward += 0.15  # Buffed recovery bonus
+                        bonus += 0.15  # Buffed recovery bonus
 
                 # Speed bonus
                 if any("P1" in str(a) for a in active_alerts) and action == 1:
-                    self._accumulated_reward += 0.05
+                    bonus += 0.05
 
-                final_reward = self._compute_final_reward(done=True)
+                final_reward = self._compute_final_reward(done=True, extra_bonus=bonus)
                 return self.state(), final_reward, True, info
 
             # ── Advance to next stage ─────────────────────────
@@ -1113,10 +1114,10 @@ class DevOpsReleaseCmdEnv:
         except Exception:
             return self.state(), 0.0, True, {}
 
-    def _compute_final_reward(self, done: bool) -> float:
+    def _compute_final_reward(self, done: bool, extra_bonus: float = 0.0) -> float:
         """Normalise accumulated reward to [0.0, 1.0]."""
         if self._stages_run == 0:
             return 0.0
         raw_max = (0.35 * max(self._stages_run, 1)) + 0.15
-        normalised = self._accumulated_reward / raw_max
+        normalised = (self._accumulated_reward / raw_max) + extra_bonus
         return round(max(0.0, min(1.0, normalised)), 2)

@@ -221,6 +221,9 @@ SCENARIO_META = {
 # ═══════════════════════════════════════════════════════════════
 
 class ScenarioEngine:
+    def __init__(self, rng=None):
+        import random
+        self.rng = rng if rng else random.Random()
     """Generates observations for all 11 scenarios across all stages."""
 
     def get_scenario_data(self, scenario_id: int) -> dict:
@@ -235,8 +238,7 @@ class ScenarioEngine:
             return self._default_obs(stage, difficulty)
         return generator(stage, difficulty, pipeline_state)
 
-    @staticmethod
-    def _default_obs(stage, difficulty) -> dict:
+    def _default_obs(self, stage, difficulty) -> dict:
         return {
             "stage": stage,
             "difficulty": difficulty,
@@ -253,8 +255,8 @@ class ScenarioEngine:
             "traffic_level_pct": 0.0,
             "rollout_strategy": "canary",
             "error_rate_pct": 0.0,
-            "latency_p99_ms": round(random.uniform(30, 45), 1),
-            "cpu_pct": round(random.uniform(10, 20), 1),
+            "latency_p99_ms": round(self.rng.uniform(30, 45), 1),
+            "cpu_pct": round(self.rng.uniform(10, 20), 1),
             "active_alerts": [],
             "sre_response": None,
         }
@@ -265,22 +267,22 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Refactor auth module"
             obs["pr_diff_summary"] = "Clean refactor of authentication module with improved error handling"
-            obs["author_trust_score"] = round(random.uniform(0.80, 0.95), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.80, 0.95), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(2, 5)
+            obs["pr_files_changed"] = self.rng.randint(2, 5)
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(40, 80)
+            obs["tests_passed"] = self.rng.randint(40, 80)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(85, 95), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(85, 95), 1)
         elif stage == 3:
             obs["deploy_environment"] = "staging"
-            obs["traffic_level_pct"] = round(random.uniform(20, 50), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(20, 50), 1)
             obs["rollout_strategy"] = "full"
         elif stage in (4, "4b"):
             obs["error_rate_pct"] = 0.1
-            obs["latency_p99_ms"] = round(random.uniform(80, 120), 1)
-            obs["cpu_pct"] = round(random.uniform(20, 40), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(80, 120), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(20, 40), 1)
             obs["active_alerts"] = []
         return obs
 
@@ -288,31 +290,31 @@ class ScenarioEngine:
     def _scenario_02(self, stage, difficulty, ps) -> dict:
         obs = self._default_obs(stage, difficulty)
         if stage == 1:
-            obs["pr_title"] = random.choice([
+            obs["pr_title"] = self.rng.choice([
                 "Fix auth query", "Optimise user fetch", "Update login"
             ])
-            obs["pr_diff_summary"] = random.choice([
+            obs["pr_diff_summary"] = self.rng.choice([
                 "Modified users query: ' OR '1'='1",
                 "Updated fetch: '; DROP TABLE sessions;--",
                 "Auth change: ' UNION SELECT * FROM api_keys--",
             ])
-            obs["author_trust_score"] = round(random.uniform(0.75, 0.92), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.75, 0.92), 2)
             obs["has_tests"] = False
             obs["pr_files_changed"] = 1
         # S02 is Easy — only Stage 1 matters; but generate others just in case
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(30, 50)
+            obs["tests_passed"] = self.rng.randint(30, 50)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(70, 85), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(70, 85), 1)
         elif stage == 3:
             obs["deploy_environment"] = "staging"
-            obs["traffic_level_pct"] = round(random.uniform(10, 30), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(10, 30), 1)
             obs["rollout_strategy"] = "canary"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(random.uniform(5, 15), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(5, 15), 1)
             obs["active_alerts"] = ["P1: sql_injection_detected"]
-            obs["latency_p99_ms"] = round(random.uniform(100, 200), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(100, 200), 1)
         return obs
 
     # ── S03: Flaky Test False Alarm ──────────────────────────
@@ -321,22 +323,22 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Improve caching layer"
             obs["pr_diff_summary"] = "Refactored cache invalidation logic for better consistency"
-            obs["author_trust_score"] = round(random.uniform(0.70, 0.90), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.70, 0.90), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(2, 4)
+            obs["pr_files_changed"] = self.rng.randint(2, 4)
         elif stage == 2:
             obs["build_status"] = "flaky"
-            obs["tests_passed"] = random.randint(95, 105)
-            obs["tests_failed"] = random.randint(2, 4)
-            obs["coverage_pct"] = round(random.uniform(78, 88), 1)
+            obs["tests_passed"] = self.rng.randint(95, 105)
+            obs["tests_failed"] = self.rng.randint(2, 4)
+            obs["coverage_pct"] = round(self.rng.uniform(78, 88), 1)
         elif stage == 3:
             obs["deploy_environment"] = "staging"
-            obs["traffic_level_pct"] = round(random.uniform(30, 60), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(30, 60), 1)
             obs["rollout_strategy"] = "canary"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(random.uniform(0.0, 0.3), 2)
-            obs["latency_p99_ms"] = round(random.uniform(50, 100), 1)
-            obs["cpu_pct"] = round(random.uniform(15, 35), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.0, 0.3), 2)
+            obs["latency_p99_ms"] = round(self.rng.uniform(50, 100), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(15, 35), 1)
             obs["active_alerts"] = []
         return obs
 
@@ -346,22 +348,22 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Update array processing logic"
             obs["pr_diff_summary"] = "Loop bounds: for i in range(len(arr)+1)"
-            obs["author_trust_score"] = round(random.uniform(0.55, 0.80), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.55, 0.80), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(1, 3)
+            obs["pr_files_changed"] = self.rng.randint(1, 3)
         elif stage == 2:
             obs["build_status"] = "failing"
-            obs["tests_failed"] = random.randint(3, 8)
-            obs["tests_passed"] = random.randint(30, 60)
-            obs["coverage_pct"] = round(random.uniform(60, 75), 1)
+            obs["tests_failed"] = self.rng.randint(3, 8)
+            obs["tests_passed"] = self.rng.randint(30, 60)
+            obs["coverage_pct"] = round(self.rng.uniform(60, 75), 1)
         elif stage == 3:
             obs["deploy_environment"] = "staging"
-            obs["traffic_level_pct"] = round(random.uniform(20, 40), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(20, 40), 1)
             obs["rollout_strategy"] = "canary"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(random.uniform(3, 8), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(3, 8), 1)
             obs["active_alerts"] = ["index_out_of_bounds_errors"]
-            obs["latency_p99_ms"] = round(random.uniform(150, 300), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(150, 300), 1)
         return obs
 
     # ── S05: Peak Traffic Deploy ─────────────────────────────
@@ -370,30 +372,30 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Add new feature flag system"
             obs["pr_diff_summary"] = "Clean implementation of feature flags with toggles"
-            obs["author_trust_score"] = round(random.uniform(0.75, 0.95), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.75, 0.95), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(3, 6)
+            obs["pr_files_changed"] = self.rng.randint(3, 6)
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(50, 90)
+            obs["tests_passed"] = self.rng.randint(50, 90)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(80, 92), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(80, 92), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(88, 97), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(88, 97), 1)
             obs["rollout_strategy"] = "full"
         elif stage in (4, "4b"):
             # If the agent approved full deploy at peak traffic, bad things happen
             if ps.get("deploy_was_full_on_peak"):
-                obs["error_rate_pct"] = round(random.uniform(3, 6), 1)
+                obs["error_rate_pct"] = round(self.rng.uniform(3, 6), 1)
                 obs["active_alerts"] = ["high_traffic_error_spike"]
-                obs["latency_p99_ms"] = round(random.uniform(300, 600), 1)
-                obs["cpu_pct"] = round(random.uniform(60, 85), 1)
+                obs["latency_p99_ms"] = round(self.rng.uniform(300, 600), 1)
+                obs["cpu_pct"] = round(self.rng.uniform(60, 85), 1)
             else:
-                obs["error_rate_pct"] = round(random.uniform(0.1, 0.5), 2)
+                obs["error_rate_pct"] = round(self.rng.uniform(0.1, 0.5), 2)
                 obs["active_alerts"] = []
-                obs["latency_p99_ms"] = round(random.uniform(80, 130), 1)
-                obs["cpu_pct"] = round(random.uniform(25, 45), 1)
+                obs["latency_p99_ms"] = round(self.rng.uniform(80, 130), 1)
+                obs["cpu_pct"] = round(self.rng.uniform(25, 45), 1)
         return obs
 
     # ── S06: Malicious Dependency Update ─────────────────────
@@ -401,28 +403,28 @@ class ScenarioEngine:
         obs = self._default_obs(stage, difficulty)
         if stage == 1:
             obs["pr_title"] = "Bump lodash to 4.17.22"
-            obs["pr_diff_summary"] = random.choice([
+            obs["pr_diff_summary"] = self.rng.choice([
                 "package.json: lodash 4.17.21 -> 4.17.22 (unverified fork)",
                 "requirements: requests==2.28.3 (unknown maintainer takeover)",
                 "go.mod: crypto/sha256 -> crypto/sha256@v1.0.1 (backdoored)",
             ])
-            obs["author_trust_score"] = round(random.uniform(0.65, 0.85), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.65, 0.85), 2)
             obs["has_tests"] = True
             obs["pr_files_changed"] = 1
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(50, 80)
+            obs["tests_passed"] = self.rng.randint(50, 80)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(82, 93), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(82, 93), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(40, 70), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(40, 70), 1)
             obs["rollout_strategy"] = "canary"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(random.uniform(0.5, 2.0), 2)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.5, 2.0), 2)
             obs["active_alerts"] = ["suspicious_outbound_traffic", "unknown_ip_connection"]
-            obs["latency_p99_ms"] = round(random.uniform(200, 400), 1)
-            obs["cpu_pct"] = round(random.uniform(30, 55), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(200, 400), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(30, 55), 1)
             if stage == "4b":
                 obs["sre_response"] = (
                     "SRE: Suspicious outbound traffic detected. "
@@ -436,27 +438,27 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Optimise connection pool settings"
             obs["pr_diff_summary"] = "Adjusted pool size and timeout parameters for auth service"
-            obs["author_trust_score"] = round(random.uniform(0.70, 0.90), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.70, 0.90), 2)
             obs["has_tests"] = False
             obs["pr_files_changed"] = 1
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(40, 70)
+            obs["tests_passed"] = self.rng.randint(40, 70)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(75, 88), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(75, 88), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(50, 75), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(50, 75), 1)
             obs["rollout_strategy"] = "canary"
         elif stage == 4:
-            obs["error_rate_pct"] = round(random.uniform(1.5, 4.0), 2)
-            obs["cpu_pct"] = round(random.uniform(75, 92), 1)
-            obs["latency_p99_ms"] = round(random.uniform(800, 2000), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(1.5, 4.0), 2)
+            obs["cpu_pct"] = round(self.rng.uniform(75, 92), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(800, 2000), 1)
             obs["active_alerts"] = ["high_memory_usage", "P1: latency_degradation"]
         elif stage == "4b":
-            obs["error_rate_pct"] = round(random.uniform(1.5, 4.0), 2)
-            obs["cpu_pct"] = round(random.uniform(75, 92), 1)
-            obs["latency_p99_ms"] = round(random.uniform(800, 2000), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(1.5, 4.0), 2)
+            obs["cpu_pct"] = round(self.rng.uniform(75, 92), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(800, 2000), 1)
             obs["active_alerts"] = ["high_memory_usage", "P1: latency_degradation"]
             obs["sre_response"] = (
                 "SRE: Confirmed memory leak in auth service. "
@@ -470,28 +472,28 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Refactor session token generation"
             obs["pr_diff_summary"] = "token = user_id + timestamp"
-            obs["author_trust_score"] = round(random.uniform(0.72, 0.90), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.72, 0.90), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(1, 3)
+            obs["pr_files_changed"] = self.rng.randint(1, 3)
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(50, 80)
+            obs["tests_passed"] = self.rng.randint(50, 80)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(80, 90), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(80, 90), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(45, 70), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(45, 70), 1)
             obs["rollout_strategy"] = "canary"
         elif stage == 4:
-            obs["error_rate_pct"] = round(random.uniform(6, 10), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(6, 10), 1)
             obs["active_alerts"] = ["P1: error_rate_critical", "unusual_login_patterns"]
-            obs["latency_p99_ms"] = round(random.uniform(150, 300), 1)
-            obs["cpu_pct"] = round(random.uniform(35, 55), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(150, 300), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(35, 55), 1)
         elif stage == "4b":
-            obs["error_rate_pct"] = round(random.uniform(6, 10), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(6, 10), 1)
             obs["active_alerts"] = ["P1: error_rate_critical", "unusual_login_patterns"]
-            obs["latency_p99_ms"] = round(random.uniform(150, 300), 1)
-            obs["cpu_pct"] = round(random.uniform(35, 55), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(150, 300), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(35, 55), 1)
             obs["sre_response"] = (
                 "SRE: Security team investigating. Token entropy too low. "
                 "Rollback immediately."
@@ -504,31 +506,31 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Performance optimisation in DB layer"
             obs["pr_diff_summary"] = "removed index on users.email for speed"
-            obs["author_trust_score"] = round(random.uniform(0.60, 0.80), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.60, 0.80), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(2, 4)
+            obs["pr_files_changed"] = self.rng.randint(2, 4)
         elif stage == 2:
             obs["build_status"] = "flaky"
-            obs["tests_failed"] = random.randint(1, 3)
-            obs["tests_passed"] = random.randint(80, 120)
-            obs["coverage_pct"] = round(random.uniform(65, 78), 1)
+            obs["tests_failed"] = self.rng.randint(1, 3)
+            obs["tests_passed"] = self.rng.randint(80, 120)
+            obs["coverage_pct"] = round(self.rng.uniform(65, 78), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(88, 96), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(88, 96), 1)
             obs["rollout_strategy"] = "full"
         elif stage == 4:
-            obs["error_rate_pct"] = round(random.uniform(8, 15), 1)
-            obs["cpu_pct"] = round(random.uniform(85, 98), 1)
-            obs["latency_p99_ms"] = round(random.uniform(2000, 8000), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(8, 15), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(85, 98), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(2000, 8000), 1)
             obs["active_alerts"] = [
                 "P1: error_rate_critical",
                 "P1: latency_catastrophic",
                 "DB: full_table_scan_detected",
             ]
         elif stage == "4b":
-            obs["error_rate_pct"] = round(random.uniform(8, 15), 1)
-            obs["cpu_pct"] = round(random.uniform(85, 98), 1)
-            obs["latency_p99_ms"] = round(random.uniform(2000, 8000), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(8, 15), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(85, 98), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(2000, 8000), 1)
             obs["active_alerts"] = [
                 "P1: error_rate_critical",
                 "P1: latency_catastrophic",
@@ -545,39 +547,39 @@ class ScenarioEngine:
         obs = self._default_obs(stage, difficulty)
         if stage == 1:
             obs["pr_title"] = "Optimise metrics collection"
-            obs["pr_diff_summary"] = random.choice([
+            obs["pr_diff_summary"] = self.rng.choice([
                 "Added metrics.send(data, endpoint=os.getenv('METRICS_URL','https://metrics.internal'))",
                 "Telemetry update: POST user_data to analytics endpoint on each request",
                 "Performance: batch_export(payload, target=config.get('export_url'))",
             ])
-            obs["author_trust_score"] = round(random.uniform(0.85, 0.95), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.85, 0.95), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(2, 4)
+            obs["pr_files_changed"] = self.rng.randint(2, 4)
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(60, 100)
+            obs["tests_passed"] = self.rng.randint(60, 100)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(85, 95), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(85, 95), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(50, 75), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(50, 75), 1)
             obs["rollout_strategy"] = "canary"
         elif stage == 4:
-            obs["error_rate_pct"] = round(random.uniform(0.3, 1.0), 2)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.3, 1.0), 2)
             obs["active_alerts"] = [
                 "suspicious_external_POST",
                 "data_exfiltration_detected",
             ]
-            obs["latency_p99_ms"] = round(random.uniform(120, 200), 1)
-            obs["cpu_pct"] = round(random.uniform(30, 55), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(120, 200), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(30, 55), 1)
         elif stage == "4b":
-            obs["error_rate_pct"] = round(random.uniform(0.3, 1.0), 2)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.3, 1.0), 2)
             obs["active_alerts"] = [
                 "suspicious_external_POST",
                 "data_exfiltration_detected",
             ]
-            obs["latency_p99_ms"] = round(random.uniform(120, 200), 1)
-            obs["cpu_pct"] = round(random.uniform(30, 55), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(120, 200), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(30, 55), 1)
             obs["sre_response"] = (
                 "SRE: Security alert. Unknown POST requests to 203.0.113.42 (external). "
                 "Possible data exfiltration. Rollback and escalate to security team."
@@ -593,27 +595,27 @@ class ScenarioEngine:
                 "bumped reqeusts==2.28 (typo-squat) | added eval(req.headers.get('X-Opt')) "
                 "| Note: Requires manual DB migration prior to deploy."
             )
-            obs["author_trust_score"] = round(random.uniform(0.85, 0.98), 2)  # Looks very trusted
+            obs["author_trust_score"] = round(self.rng.uniform(0.85, 0.98), 2)  # Looks very trusted
             obs["has_tests"] = True
             obs["pr_files_changed"] = 2
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(150, 200)
+            obs["tests_passed"] = self.rng.randint(150, 200)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(92, 98), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(92, 98), 1)
         elif stage == 3:
             obs["deploy_environment"] = "staging"
-            obs["traffic_level_pct"] = round(random.uniform(10, 30), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(10, 30), 1)
             obs["rollout_strategy"] = "canary"
         elif stage == 4:
-            obs["error_rate_pct"] = round(random.uniform(0.1, 1.5), 2)
-            obs["cpu_pct"] = round(random.uniform(20, 45), 1)
-            obs["latency_p99_ms"] = round(random.uniform(100, 150), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.1, 1.5), 2)
+            obs["cpu_pct"] = round(self.rng.uniform(20, 45), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(100, 150), 1)
             obs["active_alerts"] = ["db_schema_mismatch_warning"]
         elif stage == "4b":
-            obs["error_rate_pct"] = round(random.uniform(0.1, 1.5), 2)
-            obs["cpu_pct"] = round(random.uniform(20, 45), 1)
-            obs["latency_p99_ms"] = round(random.uniform(100, 150), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.1, 1.5), 2)
+            obs["cpu_pct"] = round(self.rng.uniform(20, 45), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(100, 150), 1)
             obs["active_alerts"] = ["db_schema_mismatch_warning"]
             obs["sre_response"] = (
                 "SRE: Ghost errors in cluster. Security flagged eval() in new dep. "
@@ -627,29 +629,29 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Update kubernetes replica constraints"
             obs["pr_diff_summary"] = "deployment.yaml: replicas changed from 5 to 2"
-            obs["author_trust_score"] = round(random.uniform(0.70, 0.85), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.70, 0.85), 2)
             obs["has_tests"] = True
             obs["pr_files_changed"] = 1
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(100, 150)
+            obs["tests_passed"] = self.rng.randint(100, 150)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(85, 95), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(85, 95), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(80, 95), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(80, 95), 1)
             obs["rollout_strategy"] = "full"
         elif stage == 4:
             if ps.get("deploy_was_full_on_peak"):
-                obs["error_rate_pct"] = round(random.uniform(4, 8), 1)
+                obs["error_rate_pct"] = round(self.rng.uniform(4, 8), 1)
                 obs["active_alerts"] = ["P1: pod_autoscaler_failure", "high_traffic_error_spike"]
-                obs["latency_p99_ms"] = round(random.uniform(400, 800), 1)
-                obs["cpu_pct"] = round(random.uniform(90, 99), 1)
+                obs["latency_p99_ms"] = round(self.rng.uniform(400, 800), 1)
+                obs["cpu_pct"] = round(self.rng.uniform(90, 99), 1)
             else:
-                obs["error_rate_pct"] = round(random.uniform(0.1, 0.5), 2)
+                obs["error_rate_pct"] = round(self.rng.uniform(0.1, 0.5), 2)
                 obs["active_alerts"] = []
-                obs["latency_p99_ms"] = round(random.uniform(100, 150), 1)
-                obs["cpu_pct"] = round(random.uniform(40, 60), 1)
+                obs["latency_p99_ms"] = round(self.rng.uniform(100, 150), 1)
+                obs["cpu_pct"] = round(self.rng.uniform(40, 60), 1)
         return obs
 
     # ── S13: The Database Schema Lock ────────────────────────
@@ -658,23 +660,23 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Add index to user query table"
             obs["pr_diff_summary"] = "CREATE INDEX concurrently on large_transactions_table"
-            obs["author_trust_score"] = round(random.uniform(0.80, 0.95), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.80, 0.95), 2)
             obs["has_tests"] = True
             obs["pr_files_changed"] = 2
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(200, 250)
+            obs["tests_passed"] = self.rng.randint(200, 250)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = round(random.uniform(90, 98), 1)
+            obs["coverage_pct"] = round(self.rng.uniform(90, 98), 1)
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(50, 75), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(50, 75), 1)
             obs["rollout_strategy"] = "full"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(random.uniform(10, 18), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(10, 18), 1)
             obs["active_alerts"] = ["P1: db_connection_pool_exhausted", "slow_queries_detected"]
-            obs["latency_p99_ms"] = round(random.uniform(2000, 4000), 1)
-            obs["cpu_pct"] = round(random.uniform(85, 100), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(2000, 4000), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(85, 100), 1)
             if stage == "4b":
                 obs["sre_response"] = SCENARIO_META[13]["hitl_sre_response"]
         return obs
@@ -685,23 +687,23 @@ class ScenarioEngine:
         if stage == 1:
             obs["pr_title"] = "Auto-generated PR: Refactor authentication boundary"
             obs["pr_diff_summary"] = "// LLM auto-generated patch - ignore edge cases for now"
-            obs["author_trust_score"] = round(random.uniform(0.60, 0.75), 2)
+            obs["author_trust_score"] = round(self.rng.uniform(0.60, 0.75), 2)
             obs["has_tests"] = True
-            obs["pr_files_changed"] = random.randint(5, 12)
+            obs["pr_files_changed"] = self.rng.randint(5, 12)
         elif stage == 2:
             obs["build_status"] = "passing"
-            obs["tests_passed"] = random.randint(350, 450)
+            obs["tests_passed"] = self.rng.randint(350, 450)
             obs["tests_failed"] = 0
             obs["coverage_pct"] = 100.0  # The deceptive trap
         elif stage == 3:
             obs["deploy_environment"] = "production"
-            obs["traffic_level_pct"] = round(random.uniform(40, 60), 1)
+            obs["traffic_level_pct"] = round(self.rng.uniform(40, 60), 1)
             obs["rollout_strategy"] = "canary"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(random.uniform(18, 25), 1)
+            obs["error_rate_pct"] = round(self.rng.uniform(18, 25), 1)
             obs["active_alerts"] = ["P1: massive_auth_failures", "unauthorized_access_spike"]
-            obs["latency_p99_ms"] = round(random.uniform(100, 200), 1)
-            obs["cpu_pct"] = round(random.uniform(20, 40), 1)
+            obs["latency_p99_ms"] = round(self.rng.uniform(100, 200), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(20, 40), 1)
             if stage == "4b":
                 obs["sre_response"] = SCENARIO_META[14]["hitl_sre_response"]
         return obs
@@ -712,9 +714,9 @@ class ScenarioEngine:
 # ═══════════════════════════════════════════════════════════════
 
 class PipelineStateEngine:
-    """Tracks cascading state across pipeline stages."""
-
-    def __init__(self):
+    def __init__(self, rng=None):
+        import random
+        self.rng = rng if rng else random.Random()
         self._state = {}
         self.reset()
 
@@ -786,11 +788,11 @@ class PipelineStateEngine:
         # Peak deploy propagation
         if self._state["deploy_was_full_on_peak"]:
             obs["error_rate_pct"] = round(
-                obs.get("error_rate_pct", 0) + random.uniform(2, 5), 2
+                obs.get("error_rate_pct", 0) + self.rng.uniform(2, 5), 2
             )
             obs["error_rate_pct"] = min(obs["error_rate_pct"], 100.0)
             obs["latency_p99_ms"] = round(
-                obs.get("latency_p99_ms", 0) * random.uniform(1.5, 3.0), 1
+                obs.get("latency_p99_ms", 0) * self.rng.uniform(1.5, 3.0), 1
             )
             obs.setdefault("active_alerts", [])
             if "high_traffic_error_spike" not in obs["active_alerts"]:
@@ -799,7 +801,7 @@ class PipelineStateEngine:
         # Build failure propagation
         if self._state["build_failed"]:
             obs["error_rate_pct"] = round(
-                obs.get("error_rate_pct", 0) + random.uniform(1, 3), 2
+                obs.get("error_rate_pct", 0) + self.rng.uniform(1, 3), 2
             )
             obs["error_rate_pct"] = min(obs["error_rate_pct"], 100.0)
             obs.setdefault("active_alerts", [])
@@ -941,8 +943,9 @@ class DevOpsReleaseCmdEnv:
     """Main OpenEnv environment class."""
 
     def __init__(self):
-        self._scenario_engine = ScenarioEngine()
-        self._pipeline_engine = PipelineStateEngine()
+        self.rng = __import__("random").Random()
+        self._scenario_engine = ScenarioEngine(self.rng)
+        self._pipeline_engine = PipelineStateEngine(self.rng)
         self._grader = GraderEngine()
         self._current_obs: dict = {}
         self._current_stage = 1
@@ -960,9 +963,9 @@ class DevOpsReleaseCmdEnv:
         seed: for reproducibility
         Returns: JSON string of initial observation
         """
-        self._current_seed = seed if seed is not None else random.randint(0, 999999)
+        self._current_seed = seed if seed is not None else self.rng.randint(0, 999999)
         if seed is not None:
-            random.seed(seed)
+            self.rng.seed(seed)
 
         self._pipeline_engine.reset()
         self._accumulated_reward = 0.0
@@ -970,7 +973,7 @@ class DevOpsReleaseCmdEnv:
         self._hitl_active = False
 
         if difficulty is None:
-            difficulty = random.choice([1, 2, 3, 4])
+            difficulty = self.rng.choice([1, 2, 3, 4])
         self._current_difficulty = difficulty
 
         # Assign scenario based on difficulty
@@ -980,7 +983,7 @@ class DevOpsReleaseCmdEnv:
             3: [6, 7, 8, 13],    # Hard: S06, S07, S08, S13
             4: [9, 10, 11, 14],  # Nightmare: S09, S10, S11, S14
         }
-        self._current_scenario_id = random.choice(scenario_pools[difficulty])
+        self._current_scenario_id = self.rng.choice(scenario_pools[difficulty])
 
         self._current_stage = 1
         self._generate_observation(stage=1)

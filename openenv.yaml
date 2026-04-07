@@ -50,28 +50,28 @@ tasks:
     difficulty: 1
     stages: [1]
     grader: deterministic_pipeline
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
     description: "Single-stage PR review on clear-cut scenarios"
 
   - name: Build Gate
     difficulty: 2
     stages: [1, 2]
     grader: deterministic_pipeline
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
     description: "Two-stage chain requiring context retention across PR and CI"
 
   - name: Full Release
     difficulty: 3
     stages: [1, 2, 3, 4]
     grader: deterministic_pipeline_with_recovery
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
     description: "Full lifecycle with HITL simulation on escalation"
 
   - name: Nightmare Release
     difficulty: 4
     stages: [1, 2, 3, 4]
     grader: deterministic_pipeline_with_recovery
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
     description: "Combined failure modes designed to challenge frontier models"
 
   - name: Deceptive Release

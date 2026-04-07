@@ -72,7 +72,7 @@ def test_no_negative_rewards():
         for action in [-1, 0, 1, 2, 3, 99, None, "bad"]:
             env.reset(difficulty=diff, seed=42)
             _, reward, _, info = env.step(action)
-            assert 0.0 <= reward <= 1.0, (
+            assert 0.01 <= reward <= 0.99, (
                 f"FAIL: diff={diff} action={action} reward={reward}"
             )
             assert info == {}, f"FAIL: info not empty: {info}"

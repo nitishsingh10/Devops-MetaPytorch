@@ -1020,7 +1020,7 @@ class DevOpsReleaseCmdEnv:
 
             # Validate action
             if not isinstance(action, int) or action not in (0, 1, 2, 3):
-                return self.state(), 0.0, True, info
+                return self.state(), 0.01, True, info
 
             stage = self._current_obs.get("stage", 1)
 
@@ -1028,7 +1028,7 @@ class DevOpsReleaseCmdEnv:
             active_alerts = self._current_obs.get("active_alerts", [])
             if action == 0 and stage in (4, "4b"):
                 if any("P1" in str(a) for a in active_alerts):
-                    return self.state(), 0.0, True, info
+                    return self.state(), 0.01, True, info
 
             # ── Get scenario data for grading ─────────────────
             scenario_data = self._scenario_engine.get_scenario_data(
@@ -1113,12 +1113,12 @@ class DevOpsReleaseCmdEnv:
             return self.state(), partial, False, info
 
         except Exception:
-            return self.state(), 0.0, True, {}
+            return self.state(), 0.01, True, {}
 
     def _compute_final_reward(self, done: bool, extra_bonus: float = 0.0) -> float:
-        """Normalise accumulated reward to [0.0, 1.0]."""
+        """Normalise accumulated reward to [0.01, 0.99]."""
         if self._stages_run == 0:
-            return 0.0
+            return 0.01
         raw_max = (0.35 * max(self._stages_run, 1)) + 0.15
         normalised = (self._accumulated_reward / raw_max) + extra_bonus
-        return round(max(0.0, min(1.0, normalised)), 2)
+        return round(max(0.01, min(0.99, normalised)), 2)

@@ -859,7 +859,10 @@
         </select>
       </div>
       <div class="control-group">
-        <label for="seed-input">Seed</label>
+        <label for="seed-input" style="display: flex; justify-content: space-between;">
+          <span>Seed</span>
+          <span style="cursor:pointer; color:var(--accent); font-size:10px; text-transform:none; letter-spacing:0;" onclick="document.getElementById('seed-input').value = Math.floor(Math.random() * 100000)" title="Randomize Seed">🎲 Random</span>
+        </label>
         <input type="number" id="seed-input" value="42" min="0" max="99999">
       </div>
       <button class="btn btn-primary" id="btn-generate" onclick="generateEpisode()">

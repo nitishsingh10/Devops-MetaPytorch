@@ -23,15 +23,12 @@ from openai import OpenAI
 from environment import DevOpsReleaseCmdEnv
 
 # ── Strict env var loading ─────────────────────────────────
-API_BASE_URL = os.getenv("API_BASE_URL")
-MODEL_NAME = os.getenv("MODEL_NAME")
-HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-if not API_BASE_URL or not MODEL_NAME or not HF_TOKEN:
-    raise ValueError(
-        "Missing required environment variables. "
-        "Set: API_BASE_URL, MODEL_NAME, and HF_TOKEN (or OPENAI_API_KEY)"
-    )
+if HF_TOKEN is None:
+    raise ValueError("HF_TOKEN environment variable is required")
 
 
 # ── Per-call timeout handler ───────────────────────────────
@@ -163,7 +160,7 @@ def main():
         # ── [END] structured log ──────────────────────────────
         success_val = "true" if final_score > 0.0 else "false"
         rewards_str = ",".join(f"{r:.2f}" for r in step_rewards)
-        print(f"[END] success={success_val} steps={step_num} score={final_score:.2f} rewards={rewards_str}", flush=True)
+        print(f"[END] success={success_val} steps={step_num} rewards={rewards_str}", flush=True)
 
         results.append(
             {"task": task_name, "difficulty": diff, "reward": final_score}

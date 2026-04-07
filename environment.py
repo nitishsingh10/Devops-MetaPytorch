@@ -960,6 +960,7 @@ class DevOpsReleaseCmdEnv:
         seed: for reproducibility
         Returns: JSON string of initial observation
         """
+        self._current_seed = seed if seed is not None else random.randint(0, 999999)
         if seed is not None:
             random.seed(seed)
 
@@ -988,9 +989,6 @@ class DevOpsReleaseCmdEnv:
 
     def _generate_observation(self, stage):
         """Generate and store observation for the given stage."""
-        stage_num = 5 if stage == "4b" else int(stage)
-        random.seed(self._current_seed + stage_num)
-        
         pipeline_state = self._pipeline_engine.get()
         obs_dict = self._scenario_engine.generate(
             self._current_scenario_id,

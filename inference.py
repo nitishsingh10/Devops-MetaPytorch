@@ -128,8 +128,11 @@ def main():
         # ── [START] structured log ────────────────────────────
         print(f"[START] task={safe_task_name} env=devops_release_commander model={MODEL_NAME}", flush=True)
 
+        is_timeout = False
+
         while not done:
             if time.time() - start_total > 1050:  # 17.5 min hard cap
+                is_timeout = True
                 done = True
                 break
                 
@@ -147,6 +150,7 @@ def main():
             print(f"[STEP] step={step_num} action={action} reward={reward:.2f} done={done_val} error=null", flush=True)
 
             if step_num > 6:  # Safety guard against infinite loops
+                is_timeout = True
                 done = True
 
         # ── Determine status ──────────────────────────────────
@@ -154,7 +158,7 @@ def main():
         final_score = min(max(final_score, 0.0), 1.0)
 
         # ── [END] structured log ──────────────────────────────
-        success_val = "true" if done else "false"
+        success_val = "false" if is_timeout else "true"
         rewards_str = ",".join(f"{r:.2f}" for r in step_rewards)
         print(f"[END] success={success_val} steps={step_num} rewards={rewards_str}", flush=True)
 

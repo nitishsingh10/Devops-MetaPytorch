@@ -843,7 +843,7 @@
     </div>
   </header>
 
-  <div id="toast-container" style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 12px; align-items: center; pointer-events: none; width: 100%;"></div>
+  <div id="toast-container" style="position: fixed; bottom: 32px; right: 32px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; pointer-events: none; width: auto; max-width: 350px;"></div>
 
   <main class="main">
 
@@ -859,9 +859,9 @@
         </select>
       </div>
       <div class="control-group">
-        <label for="seed-input" style="display: flex; justify-content: space-between;">
+        <label for="seed-input" style="display: flex; justify-content: space-between; align-items: center;">
           <span>Seed</span>
-          <span style="cursor:pointer; color:var(--accent); font-size:10px; text-transform:none; letter-spacing:0;" onclick="document.getElementById('seed-input').value = Math.floor(Math.random() * 100000)" title="Randomize Seed">🎲 Random</span>
+          <span style="cursor:pointer; background:rgba(79, 110, 247, 0.15); color:var(--accent); font-size:10px; font-weight:700; text-transform:none; letter-spacing:0; padding:2px 8px; border-radius:4px; border:1px solid rgba(79, 110, 247, 0.4); transition:background 0.2s;" onmouseover="this.style.background='rgba(79, 110, 247, 0.3)'" onmouseout="this.style.background='rgba(79, 110, 247, 0.15)'" onclick="document.getElementById('seed-input').value = Math.floor(Math.random() * 100000)" title="Randomize Seed">🎲 Random</span>
         </label>
         <input type="number" id="seed-input" value="42" min="0" max="99999">
       </div>
@@ -1000,29 +1000,38 @@
     function showToast(msg, isError = true) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.style.padding = '18px 32px';
-      toast.style.background = isError ? 'var(--red-bg)' : 'var(--green-bg)';
-      toast.style.border = `2px solid ${isError ? 'var(--red-border)' : 'var(--green-border)'}`;
-      toast.style.color = isError ? 'var(--red)' : 'var(--green)';
-      toast.style.borderRadius = 'var(--radius)';
-      toast.style.boxShadow = '0 10px 40px rgba(0,0,0,0.5)';
-      toast.style.fontSize = '18px';
-      toast.style.fontWeight = '800';
-      toast.style.letterSpacing = '0.5px';
+      toast.style.padding = '12px 20px';
+      toast.style.background = isError ? 'var(--bg-card)' : 'var(--bg-card)';
+      toast.style.borderLeft = `4px solid ${isError ? 'var(--red)' : 'var(--green)'}`;
+      toast.style.borderTop = '1px solid var(--border)';
+      toast.style.borderRight = '1px solid var(--border)';
+      toast.style.borderBottom = '1px solid var(--border)';
+      toast.style.color = 'var(--text-primary)';
+      toast.style.borderRadius = 'var(--radius-sm)';
+      toast.style.boxShadow = '0 8px 30px rgba(0,0,0,0.6)';
+      toast.style.fontSize = '14px';
+      toast.style.fontWeight = '500';
+      toast.style.letterSpacing = '0px';
+      toast.style.display = 'flex';
+      toast.style.alignItems = 'center';
+      toast.style.gap = '10px';
       toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-20px)';
-      toast.style.transition = 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
-      toast.innerHTML = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
+      toast.style.transform = 'translateX(20px)';
+      toast.style.transition = 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+      
+      const icon = isError ? '<span style="color:var(--red); font-size:16px;">🚨</span>' : '<span style="color:var(--green); font-size:16px;">✅</span>';
+      toast.innerHTML = `${icon} <span>${msg}</span>`;
+      
       container.appendChild(toast);
       requestAnimationFrame(() => {
         toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
+        toast.style.transform = 'translateX(0)';
       });
       setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
-        setTimeout(() => toast.remove(), 400);
-      }, 5000);
+        toast.style.transform = 'translateX(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
     }
 
     /* ═════════════════════════════════════════════════════

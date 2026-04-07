@@ -85,15 +85,11 @@ def call_llm(client, obs_str):
         )
         signal.alarm(0)
         raw = response.choices[0].message.content
-        print(f"    Raw output: {raw}")
 
         # Robust parsing — try JSON first, fall back to regex
         try:
             parsed = json.loads(raw)
             action = int(parsed.get("action", -1))
-            reason = parsed.get("reason", "")
-            if reason:
-                print(f"    Reason: {reason}")
         except (json.JSONDecodeError, ValueError):
             match = re.search(r"\b([0-3])\b", raw)
             action = int(match.group(1)) if match else -1
@@ -123,19 +119,11 @@ def main():
     ]
     results = []
 
-    print("=" * 60)
-    print("  DevOps Release Commander — Agent Evaluation")
-    print("=" * 60)
-
     start_total = time.time()
 
     for i, diff in enumerate(difficulties):
         task_id = i + 1
         task_name = task_names[i]
-
-        print(f"\n{'─' * 60}")
-        print(f"Task {task_id}: {task_name} (Difficulty {diff})")
-        print(f"{'─' * 60}")
 
         obs_str = env.reset(difficulty=diff, seed=42)
         step_num = 0
@@ -155,19 +143,11 @@ def main():
             step_num += 1
             obs = json.loads(obs_str)
             stage = obs.get("stage", "?")
-            print(f"\n  Stage {stage} (Step {step_num}):")
-            print(
-                f"  Obs summary: trust={obs.get('author_trust_score', 'N/A')} "
-                f"alerts={obs.get('active_alerts', [])} "
-                f"build={obs.get('build_status', 'N/A')}"
-            )
 
             action = call_llm(client, obs_str)
-            print(f"  Action: {action}")
 
             obs_str, reward, done, info = env.step(action)
             step_rewards.append(float(reward))
-            print(f"  Step reward: {reward} | done: {done}")
 
             # ── [STEP] structured log ─────────────────────────
             done_val = str(done).lower()
@@ -179,19 +159,6 @@ def main():
         # ── Determine status ──────────────────────────────────
         final_score = step_rewards[-1] if step_rewards else 0.0
         final_score = min(max(final_score, 0.0), 1.0)
-        
-        if final_score == 1.0:
-            status = "optimal"
-            print(f"\n  EPISODE REWARD: {final_score}")
-            print("  STATUS: Optimal ✅")
-        elif final_score == 0.0:
-            status = "catastrophic"
-            print(f"\n  EPISODE REWARD: {final_score}")
-            print("  STATUS: Catastrophic ❌")
-        else:
-            status = "partial"
-            print(f"\n  EPISODE REWARD: {final_score}")
-            print(f"  STATUS: Partial {final_score} ⚠️")
 
         # ── [END] structured log ──────────────────────────────
         success_val = "true" if final_score > 0.0 else "false"
@@ -201,15 +168,6 @@ def main():
         results.append(
             {"task": task_name, "difficulty": diff, "reward": final_score}
         )
-
-    elapsed = time.time() - start_total
-
-    print(f"\n{'=' * 60}")
-    print(f"  EVALUATION COMPLETE ({elapsed:.1f}s)")
-    print(f"{'=' * 60}")
-    for i, r in enumerate(results):
-        print(f"  Task {i+1} ({r['task']}): {r['reward']}")
-    print(f"{'=' * 60}")
 
 
 if __name__ == "__main__":

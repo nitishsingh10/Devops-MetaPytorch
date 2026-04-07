@@ -1529,8 +1529,8 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       valEl.textContent = reward.toFixed(2);
 
       let className;
-      if (reward === 1.0) className = 'optimal';
-      else if (reward === 0.0) className = 'catastrophic';
+      if (reward >= 0.99) className = 'optimal';
+      else if (reward <= 0.01) className = 'catastrophic';
       else className = 'partial';
 
       valEl.className = 'reward-value ' + className;

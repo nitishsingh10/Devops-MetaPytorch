@@ -94,11 +94,9 @@ def call_llm(client, obs_str):
 
     except TimeoutError:
         signal.alarm(0)
-        print("    LLM TIMEOUT — using fallback action -1")
         return -1
-    except Exception as e:
+    except Exception:
         signal.alarm(0)
-        print(f"    LLM ERROR: {e} — using fallback action -1")
         return -1
 
 
@@ -132,7 +130,6 @@ def main():
 
         while not done:
             if time.time() - start_total > 1050:  # 17.5 min hard cap
-                print(f'[TIMEOUT] Wall-clock limit reached, ending episode')
                 done = True
                 break
                 

@@ -251,11 +251,11 @@ class ScenarioEngine:
             "build_status": "pending",
             "tests_passed": 0,
             "tests_failed": 0,
-            "coverage_pct": 100.0,
+            "coverage_pct": 99.99,
             "deploy_environment": "staging",
-            "traffic_level_pct": 0.0,
+            "traffic_level_pct": 0.01,
             "rollout_strategy": "canary",
-            "error_rate_pct": 0.0,
+            "error_rate_pct": 0.01,
             "latency_p99_ms": round(self.rng.uniform(30, 45), 1),
             "cpu_pct": round(self.rng.uniform(10, 20), 1),
             "active_alerts": [],
@@ -337,7 +337,7 @@ class ScenarioEngine:
             obs["traffic_level_pct"] = round(self.rng.uniform(30, 60), 1)
             obs["rollout_strategy"] = "canary"
         elif stage in (4, "4b"):
-            obs["error_rate_pct"] = round(self.rng.uniform(0.0, 0.3), 2)
+            obs["error_rate_pct"] = round(self.rng.uniform(0.01, 0.3), 2)
             obs["latency_p99_ms"] = round(self.rng.uniform(50, 100), 1)
             obs["cpu_pct"] = round(self.rng.uniform(15, 35), 1)
             obs["active_alerts"] = []

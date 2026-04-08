@@ -4,7 +4,7 @@ DevOps Release Commander — FastAPI Server
 Serves the OpenEnv environment over HTTP on port 7860.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -37,7 +37,6 @@ def demo_ui():
         return f.read()
 
 
-from fastapi import FastAPI, Request
 
 @app.api_route("/reset", methods=["GET", "POST"])
 async def reset_env(request: Request, difficulty: Optional[int] = None, seed: Optional[int] = None):
@@ -49,7 +48,7 @@ async def reset_env(request: Request, difficulty: Optional[int] = None, seed: Op
             if isinstance(body, dict):
                 difficulty = body.get("difficulty", difficulty)
                 seed = body.get("seed", seed)
-    except:
+    except Exception:
         pass
         
     obs_str = env.reset(difficulty=difficulty, seed=seed)

@@ -55,7 +55,7 @@ class Action(BaseModel):
 
 
 class Reward(BaseModel):
-    value: float = Field(ge=0.0, le=1.0)
+    value: float = Field(ge=0.01, le=0.99)
     done: bool
     info: dict  # ALWAYS {} — zero leakage
 
@@ -221,10 +221,11 @@ SCENARIO_META = {
 # ═══════════════════════════════════════════════════════════════
 
 class ScenarioEngine:
+    """Generates observations for all 14 scenarios across all stages."""
+
     def __init__(self, rng=None):
         import random
         self.rng = rng if rng else random.Random()
-    """Generates observations for all 11 scenarios across all stages."""
 
     def get_scenario_data(self, scenario_id: int) -> dict:
         """Return the metadata for a given scenario."""

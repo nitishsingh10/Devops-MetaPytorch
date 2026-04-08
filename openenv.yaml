@@ -2,7 +2,7 @@ spec_version: 1
 name: DevOps Release Commander
 team: CTL+ALT+DEL
 baseline_script: inference.py
-reward_range: [0.0, 1.0]
+reward_range: [0.01, 0.99]
 max_steps_per_episode: 5
 
 description: >

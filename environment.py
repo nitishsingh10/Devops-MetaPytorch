@@ -27,24 +27,24 @@ class Observation(BaseModel):
     pr_title: str = ""
     pr_diff_summary: str = ""
     pr_files_changed: int = 0
-    author_trust_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    author_trust_score: float = Field(default=0.01, ge=0.01, le=0.99)
     has_tests: bool = False
 
     # Stage 2 - CI Build
     build_status: str = "pending"  # passing/failing/flaky/pending
     tests_passed: int = 0
     tests_failed: int = 0
-    coverage_pct: float = Field(default=100.0, ge=0.0, le=100.0)
+    coverage_pct: float = Field(default=99.99, ge=0.01, le=99.99)
 
     # Stage 3 - Deploy
     deploy_environment: str = "staging"  # staging/production
-    traffic_level_pct: float = Field(default=0.0, ge=0.0, le=100.0)
+    traffic_level_pct: float = Field(default=0.01, ge=0.01, le=99.99)
     rollout_strategy: str = "canary"  # full/canary/blue_green
 
     # Stage 4 / 4b - Monitor + HITL
-    error_rate_pct: float = Field(default=0.0, ge=0.0, le=100.0)
+    error_rate_pct: float = Field(default=0.01, ge=0.01, le=99.99)
     latency_p99_ms: float = 0.0
-    cpu_pct: float = Field(default=0.0, ge=0.0, le=100.0)
+    cpu_pct: float = Field(default=0.01, ge=0.01, le=99.99)
     active_alerts: list = Field(default_factory=list)
     sre_response: Optional[str] = None  # Only on Stage 4b
 
@@ -695,7 +695,7 @@ class ScenarioEngine:
             obs["build_status"] = "passing"
             obs["tests_passed"] = self.rng.randint(350, 450)
             obs["tests_failed"] = 0
-            obs["coverage_pct"] = 100.0  # The deceptive trap
+            obs["coverage_pct"] = 99.99  # The deceptive trap
         elif stage == 3:
             obs["deploy_environment"] = "production"
             obs["traffic_level_pct"] = round(self.rng.uniform(40, 60), 1)
@@ -791,7 +791,7 @@ class PipelineStateEngine:
             obs["error_rate_pct"] = round(
                 obs.get("error_rate_pct", 0) + self.rng.uniform(2, 5), 2
             )
-            obs["error_rate_pct"] = min(obs["error_rate_pct"], 100.0)
+            obs["error_rate_pct"] = min(obs["error_rate_pct"], 99.99)
             obs["latency_p99_ms"] = round(
                 obs.get("latency_p99_ms", 0) * self.rng.uniform(1.5, 3.0), 1
             )
@@ -804,7 +804,7 @@ class PipelineStateEngine:
             obs["error_rate_pct"] = round(
                 obs.get("error_rate_pct", 0) + self.rng.uniform(1, 3), 2
             )
-            obs["error_rate_pct"] = min(obs["error_rate_pct"], 100.0)
+            obs["error_rate_pct"] = min(obs["error_rate_pct"], 99.99)
             obs.setdefault("active_alerts", [])
             if "build_issue_in_production" not in obs["active_alerts"]:
                 obs["active_alerts"].append("build_issue_in_production")

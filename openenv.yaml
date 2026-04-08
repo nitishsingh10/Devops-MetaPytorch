@@ -21,18 +21,18 @@ observation_space:
     difficulty:         {type: integer, description: "1=Easy 2=Medium 3=Hard 4=Nightmare"}
     pr_title:           {type: string}
     pr_diff_summary:    {type: string}
-    author_trust_score: {type: float, range: [0.0, 1.0]}
+    author_trust_score: {type: float, range: [0.01, 0.99]}
     has_tests:          {type: boolean}
     build_status:       {type: string, enum: [passing, failing, flaky, pending]}
     tests_passed:       {type: integer}
     tests_failed:       {type: integer}
-    coverage_pct:       {type: float, range: [0.0, 100.0]}
+    coverage_pct:       {type: float, range: [0.01, 99.99]}
     deploy_environment: {type: string, enum: [staging, production]}
-    traffic_level_pct:  {type: float, range: [0.0, 100.0]}
+    traffic_level_pct:  {type: float, range: [0.01, 99.99]}
     rollout_strategy:   {type: string, enum: [full, canary, blue_green]}
-    error_rate_pct:     {type: float, range: [0.0, 100.0]}
+    error_rate_pct:     {type: float, range: [0.01, 99.99]}
     latency_p99_ms:     {type: float}
-    cpu_pct:            {type: float, range: [0.0, 100.0]}
+    cpu_pct:            {type: float, range: [0.01, 99.99]}
     active_alerts:      {type: list}
     sre_response:       {type: string, optional: true}
 

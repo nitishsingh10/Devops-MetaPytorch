@@ -22,9 +22,15 @@ import time
 from openai import OpenAI
 from environment import DevOpsReleaseCmdEnv
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
-HF_TOKEN = os.environ["HF_TOKEN"]
+API_BASE_URL = os.getenv("API_BASE_URL")
+MODEL_NAME = os.getenv("MODEL_NAME")
+HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
+
+if not API_BASE_URL or not MODEL_NAME or not HF_TOKEN:
+    raise ValueError(
+        "Missing required environment variables. "
+        "Set: API_BASE_URL, MODEL_NAME, and HF_TOKEN (or OPENAI_API_KEY)"
+    )
 
 
 # ── Per-call timeout handler ───────────────────────────────
@@ -116,7 +122,7 @@ def main():
         task_id = i + 1
         task_name = task_names[i]
 
-        obs_str = env.reset(difficulty=diff, seed=42 + i)
+        obs_str = env.reset(difficulty=diff, seed=42)
         step_num = 0
         done = False
         step_rewards = []

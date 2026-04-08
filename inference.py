@@ -22,12 +22,9 @@ import time
 from openai import OpenAI
 from environment import DevOpsReleaseCmdEnv
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-if HF_TOKEN is None:
-    raise ValueError("HF_TOKEN environment variable is required")
+API_BASE_URL = os.environ["API_BASE_URL"]  # No fallback — judges inject their LiteLLM proxy
+MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+HF_TOKEN = os.environ["HF_TOKEN"]
 
 
 # ── Per-call timeout handler ───────────────────────────────
@@ -154,8 +151,8 @@ def main():
                 done = True
 
         # ── Determine status ──────────────────────────────────
-        final_score = step_rewards[-1] if step_rewards else 0.0
-        final_score = min(max(final_score, 0.0), 1.0)
+        final_score = step_rewards[-1] if step_rewards else 0.01
+        final_score = min(max(final_score, 0.01), 0.99)
 
         # ── [END] structured log ──────────────────────────────
         success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 and not is_timeout else "false"

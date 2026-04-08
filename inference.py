@@ -22,8 +22,8 @@ import time
 from openai import OpenAI
 from environment import DevOpsReleaseCmdEnv
 
-API_BASE_URL = os.environ["API_BASE_URL"]  # No fallback — judges inject their LiteLLM proxy
-MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
 HF_TOKEN = os.environ["HF_TOKEN"]
 
 

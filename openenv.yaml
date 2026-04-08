@@ -78,5 +78,5 @@ tasks:
     difficulty: 4
     stages: [1, 2, 3, 4]
     grader: deterministic_pipeline_with_recovery
-    score_range: [0.0, 1.0]
+    score_range: [0.01, 0.99]
     description: "Evaluates multi-step memory & detection of delayed catastrophic logic bombs"

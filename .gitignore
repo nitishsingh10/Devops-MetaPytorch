@@ -3,3 +3,4 @@ __pycache__/
 .env
 MISSING_REQUIREMENTS.txt
 AI_HANDOFF.md
+environment_refactored.py

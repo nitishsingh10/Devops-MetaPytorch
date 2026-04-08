@@ -16,7 +16,7 @@ Everything in this repository has been strictly audited against the Hackathon's 
 - **The Novelty (Pipeline State Propagation):** Poor decisions in early stages (like allowing a risky PR) do not end the episode, but propagate catastrophic, cascaded metrics to Stage 4 (e.g., massive error rates and latency).
 - **The Novelty (HITL Simulation):** If the agent hallucinates or encounters a Hard scenario, executing `Action 3` (Escalate) triggers Stage 4b, returning a synthetic response from an SRE in `sre_response`.
 - **Absolute OOP Determinism:** To survive massive multi-threaded parallel grading, we explicitly removed all global `import random` dependencies. The environment instantiates `self.rng = random.Random(seed)` natively inside `__init__` and rigidly isolates random states.
-- **Strict Bounds Clamping:** The reward is fiercely clamped to `[0.01, 0.99]` (not `0.0 / 1.0`). Phase 2 validators instantly reject inclusive integer mappings to prevent masked crashes.
+- **Strict Bounds Clamping:** The reward is fiercely clamped to `[0.01, 0.99]` (not `0.0 / 1.0`). Phase 2 validators instantly reject inclusive integer mappings, so observation metrics also rigorously avoid representations like `0.0`, `1.0`, or `100.0` (using `0.01` and `99.99`).
 
 ### `inference.py` (The LLM Evaluation Runner)
 - Iterates sequentially through **5 Tasks** using `seed=42 + i` to aggressively shuffle scenario pools per task.
@@ -49,7 +49,8 @@ Everything in this repository has been strictly audited against the Hackathon's 
 ## 3. Important Context If You Are Asked to Edit
 
 - **Do NOT break deterministic isolated RNG.** Always use `self.rng` inside `environment.py`. Never use global `random`.
-- **Do NOT return 0.0 or 1.0.** Keep scores tightly clamped inside `(0.01, 0.99)`.
+- **Do NOT return 0.0 or 1.0.** Keep rewards deeply clamped inside `[0.01, 0.99]` and observation bounds tightly away from integer representations.
+- **Do NOT fallback API URLs.** `inference.py` must use strict `os.environ["API_BASE_URL"]`. Hardcoding OpenAI directly will bypass the judging LiteLLM proxy and instantly fail the submission!
 - **Do NOT delete `uv.lock` or `server/app.py`.** 
 - **Do NOT break the logging syntax in `inference.py`**. The hackathon dashboard parses `[START]`, `[STEP]` and `[END]` using strict, unyielding regex mapping.
 - **Do NOT refactor the Incremental Rewards.** The UI frontend perfectly depends on cumulative scalars mid-episode. Do not attempt a standard RL step-delta mapping!

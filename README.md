@@ -73,18 +73,18 @@ graph TD
 | `pr_title` | string | — | Pull request title |
 | `pr_diff_summary` | string | — | Summary of code changes |
 | `pr_files_changed` | integer | 0+ | Number of files modified |
-| `author_trust_score` | float | [0.0, 1.0] | Historical trust metric for PR author |
+| `author_trust_score` | float | [0.01, 0.99] | Historical trust metric for PR author |
 | `has_tests` | boolean | — | Whether PR includes test coverage |
 | `build_status` | string | passing/failing/flaky/pending | CI build result |
 | `tests_passed` | integer | 0+ | Number of passing tests |
 | `tests_failed` | integer | 0+ | Number of failing tests |
-| `coverage_pct` | float | [0.0, 100.0] | Code coverage percentage |
+| `coverage_pct` | float | [0.01, 99.99] | Code coverage percentage |
 | `deploy_environment` | string | staging/production | Target deployment environment |
-| `traffic_level_pct` | float | [0.0, 100.0] | Current traffic as % of peak |
+| `traffic_level_pct` | float | [0.01, 99.99] | Current traffic as % of peak |
 | `rollout_strategy` | string | full/canary/blue_green | Deployment strategy |
-| `error_rate_pct` | float | [0.0, 100.0] | Production error rate |
+| `error_rate_pct` | float | [0.01, 99.99] | Production error rate |
 | `latency_p99_ms` | float | 0+ | 99th percentile latency in ms |
-| `cpu_pct` | float | [0.0, 100.0] | CPU utilisation percentage |
+| `cpu_pct` | float | [0.01, 99.99] | CPU utilisation percentage |
 | `active_alerts` | list[string] | — | Active monitoring alerts (P1 = critical) |
 | `sre_response` | string (optional) | — | SRE response (Stage 4b only) |
 
@@ -111,7 +111,7 @@ The reward is computed from 5 components per stage:
 
 **Catastrophic Condition:** Choosing action=0 at Stage 4 when `active_alerts` contains any "P1" alert → **immediate 0.0 reward**.
 
-All rewards are normalised to **[0.0, 1.0]** and rounded to 2 decimal places.
+All rewards are fiercely clamped to **[0.01, 0.99]** and rounded to 2 decimal places.
 
 ### Pipeline State Propagation
 
@@ -233,9 +233,10 @@ open http://localhost:7860
 ```
 
 ### Environment Variables (for inference.py)
+> **Note:** Do NOT provide a fallback in the code. The Hackathon LiteLLM proxy requires `os.environ` injection.
 ```bash
 export API_BASE_URL="https://router.huggingface.co/v1"
-export MODEL_NAME="meta-llama/Llama-3.1-8B-Instruct"
+export MODEL_NAME="Qwen/Qwen2.5-72B-Instruct"
 export HF_TOKEN="hf_your_token_here"
 ```
 
@@ -317,7 +318,7 @@ Key observations:
 ## 9. Compliance
 
 - [x] **step/reset/state API** — All three endpoints present
-- [x] **Reward range [0.0, 1.0]** — All rewards normalised and clamped
+- [x] **Reward range [0.01, 0.99]** — All rewards fiercely normalised and clamped
 - [x] **info = {} always** — Zero leakage through info dict
 - [x] **step() never crashes** — Full try/except wrapping
 - [x] **Deterministic with seed** — random.seed() called once in reset()
@@ -326,6 +327,5 @@ Key observations:
 - [x] **Grader variance** — All 14 scenarios show reward variance
 - [x] **Pipeline State Propagation** — Verified cascading state
 - [x] **HITL Simulation** — Stage 4b with sre_response
-- [x] **No hardcoded env vars** — API_BASE_URL, MODEL_NAME, HF_TOKEN
-  from os.getenv() only
+- [x] **No hardcoded fallback URLs** — `API_BASE_URL` strongly requires `os.environ[]` with no default, so the judges' LiteLLM proxy correctly injects at evaluation.
 - [x] **Multi-model validation** — Benchmarked natively across `llama-3.3-70b` (HF/Groq), `mistral-large`, `gemma3:12b`, and `qwen:14b`

@@ -115,7 +115,7 @@ The reward is computed from 5 components per stage:
 
 **Catastrophic Condition:** Choosing action=0 at Stage 4 when `active_alerts` contains any "P1" alert → **immediate minimum reward (0.01)**.
 
-All rewards are strictly clamped to **[0.01, 0.99]** — never exactly 0.0 or 1.0.
+All rewards are strictly clamped to **[0.01, 0.99]** — boundary values are excluded.
 
 ### Pipeline State Propagation
 
@@ -316,7 +316,7 @@ Evaluated locally with `seed=42` across 5 tasks.
 ## 9. Compliance Checklist
 
 - [x] **step/reset/state API** — All three endpoints present
-- [x] **Reward range [0.01, 0.99]** — All rewards strictly clamped, never exactly 0.0 or 1.0
+- [x] **Reward range [0.01, 0.99]** — All rewards strictly clamped, boundary values excluded
 - [x] **Observation bounds** — All bounded fields clamped in `_generate_observation()` via universal safety clamp
 - [x] **info = {} always** — Zero leakage through info dict
 - [x] **step() never crashes** — Full try/except wrapping, returns 0.01 on error

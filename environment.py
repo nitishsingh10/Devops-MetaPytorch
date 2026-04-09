@@ -1028,7 +1028,7 @@ class DevOpsReleaseCmdEnv:
         """
         Process action and return (obs_json, reward, done, info).
         CRITICAL: Entire method body is wrapped in try/except.
-        On ANY exception: return self.state(), 0.0, True, {}
+        On ANY exception: return self.state(), 0.01, True, {}
         """
         try:
             info = {}  # ALWAYS empty — zero leakage

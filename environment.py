@@ -677,7 +677,7 @@ class ScenarioEngine:
             obs["error_rate_pct"] = round(self.rng.uniform(10, 18), 1)
             obs["active_alerts"] = ["P1: db_connection_pool_exhausted", "slow_queries_detected"]
             obs["latency_p99_ms"] = round(self.rng.uniform(2000, 4000), 1)
-            obs["cpu_pct"] = round(self.rng.uniform(85, 100), 1)
+            obs["cpu_pct"] = round(self.rng.uniform(85, 99.9), 1)
             if stage == "4b":
                 obs["sre_response"] = SCENARIO_META[13]["hitl_sre_response"]
         return obs
@@ -1007,6 +1007,17 @@ class DevOpsReleaseCmdEnv:
         obs_dict["episode_id"] = (
             f"diff{self._current_difficulty}_s{self._current_scenario_id:02d}_seed{self._current_seed}"
         )
+        # ── Universal safety clamp — openenv.yaml spec enforcement ──
+        _CLAMP_RULES = {
+            "traffic_level_pct": (0.01, 99.99),
+            "error_rate_pct":    (0.01, 99.99),
+            "coverage_pct":      (0.01, 99.99),
+            "cpu_pct":           (0.01, 99.99),
+            "author_trust_score":(0.01, 0.99),
+        }
+        for field, (lo, hi) in _CLAMP_RULES.items():
+            if field in obs_dict:
+                obs_dict[field] = round(max(lo, min(hi, obs_dict[field])), 2)
         self._current_obs = obs_dict
 
     def state(self) -> str:

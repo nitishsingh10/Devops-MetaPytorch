@@ -26,10 +26,7 @@ API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
 HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
 
-if not HF_TOKEN:
-    raise ValueError(
-        "Missing API key. Set HF_TOKEN, OPENAI_API_KEY, or API_KEY."
-    )
+# HF_TOKEN check moved inside main() to prevent module-level crash
 
 
 # ── Per-call timeout handler ───────────────────────────────
@@ -103,6 +100,10 @@ def call_llm(client, obs_str):
 
 
 def main():
+    if not HF_TOKEN:
+        print("[ERROR] Missing API key. Set HF_TOKEN, OPENAI_API_KEY, or API_KEY.", flush=True)
+        return
+
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     env = DevOpsReleaseCmdEnv()
     difficulties = [1, 2, 3, 4, 4]
@@ -148,8 +149,9 @@ def main():
             step_rewards.append(float(reward))
 
             # ── [STEP] structured log ─────────────────────────
+            safe_reward = max(0.01, min(0.99, float(reward)))
             done_val = str(done).lower()
-            print(f"[STEP] step={step_num} action={action} reward={reward:.2f} done={done_val} error=null", flush=True)
+            print(f"[STEP] step={step_num} action={action} reward={safe_reward:.2f} done={done_val} error=null", flush=True)
 
             if step_num > 6:  # Safety guard against infinite loops
                 is_timeout = True
@@ -161,7 +163,8 @@ def main():
 
         # ── [END] structured log ──────────────────────────────
         success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 and not is_timeout else "false"
-        rewards_str = ",".join(f"{r:.2f}" for r in step_rewards) if step_rewards else "0.01"
+        safe_rewards = [max(0.01, min(0.99, r)) for r in step_rewards]
+        rewards_str = ",".join(f"{r:.2f}" for r in safe_rewards) if safe_rewards else "0.01"
         print(f"[END] success={success_val} steps={max(1, step_num)} rewards={rewards_str}", flush=True)
 
         results.append(

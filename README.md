@@ -28,6 +28,10 @@ caught the problem before it reached production.
 
 ## What Makes This Environment Unique
 
+### Pipeline State Propagation
+
+Bad decisions at early stages create **observable consequences** at later stages. Approve a risky PR at Stage 1 → cascading error rate spikes and latency inflation at Stage 4. The agent never learns *why* metrics are bad — it must learn to prevent cascading failures.
+
 ### Human-in-the-Loop (HITL) Simulation — Stage 4b
 
 When an agent escalates (action=3) at Stage 3 or 4 in Hard+ scenarios,
@@ -109,9 +113,9 @@ The reward is computed from 5 components per stage:
 | **Recovery Bonus** | +0.15 | Recovers from prior bad decision at Stage 4 |
 | **Speed Bonus** | +0.05 | Direct rollback on P1 alert (no escalation first) |
 
-**Catastrophic Condition:** Choosing action=0 at Stage 4 when `active_alerts` contains any "P1" alert → **immediate 0.0 reward**.
+**Catastrophic Condition:** Choosing action=0 at Stage 4 when `active_alerts` contains any "P1" alert → **immediate minimum reward (0.01)**.
 
-All rewards are fiercely clamped to **[0.01, 0.99]** and rounded to 2 decimal places.
+All rewards are strictly clamped to **[0.01, 0.99]** — never exactly 0.0 or 1.0.
 
 ### Pipeline State Propagation
 
@@ -129,8 +133,6 @@ Stage 4: Observation now shows:
          • Inflated latency_p99_ms (×1.5-3.0 from peak)
          • Additional alerts: "high_traffic_error_spike", "build_issue_in_production"
 ```
-
-The agent never learns *why* metrics are bad — it must learn to prevent cascading failures.
 
 ```mermaid
 graph LR
@@ -159,10 +161,10 @@ graph LR
 | **S08** | 3 (Hard) | Silent Vulnerability | Low entropy token gen, flags security | S4b:Rollback |
 | **S09** | 4 (Nightmare)| The Full Storm | DB full table scans, highest error rate | S4:Emergency Stop |
 | **S10** | 4 (Nightmare)| The Traitor | Ghost metrics and exfiltration | S4b:Rollback |
-| **S11** | 4 (Nightmare)| Deceptive Hotfix | Multi-step memory: tests for missed DB migration and flagged evasive `eval()` | S1:Reject *or* S4b:Rollback |
-| **S12** | 2 (Medium) | The Infrastructure Drift | Config change deployed at peak traffic | S3:Canary |
-| **S13** | 3 (Hard) | The Database Schema Lock | Clean code but crashes DB connections in prod | S4b:Rollback |
-| **S14** | 4 (Nightmare) | The AI-Hallucinated PR | Metagame trap: "AI-generated" PR with intentionally bypassed edge cases | S1:Reject |
+| **S11** | 4 (Nightmare)| Deceptive Hotfix | Multi-step memory: missed DB migration + evasive `eval()` | S1:Reject *or* S4b:Rollback |
+| **S12** | 2 (Medium) | Infrastructure Drift | Config change deployed at peak traffic | S3:Canary |
+| **S13** | 3 (Hard) | Database Schema Lock | Clean code but crashes DB connections in prod | S4b:Rollback |
+| **S14** | 4 (Nightmare) | AI-Hallucinated PR | Metagame trap: "AI-generated" PR with bypassed edge cases | S1:Reject |
 
 ---
 
@@ -189,7 +191,7 @@ graph LR
 
 ### Task 5: Deceptive Release (Difficulty 4, Stages 1–4 with HITL)
 - **Scenarios:** S11 (Deceptive Hotfix)
-- **Challenge:** Evaluates multi-step memory & detection of delayed catastrophic logic bombs, proving the environment actually tests reasoning.
+- **Challenge:** Evaluates multi-step memory & detection of delayed catastrophic logic bombs
 
 ---
 
@@ -203,7 +205,7 @@ in Hard+ scenarios, the environment transitions to **Stage 4b**.
 1. The observation includes all Stage 4 metrics plus an `sre_response` field
 2. The `sre_response` contains a synthetic on-call SRE's assessment
 3. The agent must decide whether to follow or override the SRE recommendation
-4. Overriding good SRE advice = 0 points for the optimal_action component
+4. Overriding good SRE advice = minimum points for the optimal_action component
 
 ### Example Stage 4b observation
 ```json
@@ -233,10 +235,9 @@ open http://localhost:7860
 ```
 
 ### Environment Variables (for inference.py)
-> **Note:** Do NOT provide a fallback in the code. The Hackathon LiteLLM proxy requires `os.environ` injection.
 ```bash
 export API_BASE_URL="https://router.huggingface.co/v1"
-export MODEL_NAME="Qwen/Qwen2.5-72B-Instruct"
+export MODEL_NAME="meta-llama/Llama-3.3-70B-Instruct"
 export HF_TOKEN="hf_your_token_here"
 ```
 
@@ -252,9 +253,15 @@ python3 inference.py
 
 ## 7. API Usage
 
-### GET /reset
+### GET|POST /reset
 ```bash
+# GET
 curl "http://localhost:7860/reset?difficulty=3&seed=42"
+
+# POST
+curl -X POST "http://localhost:7860/reset" \
+  -H "Content-Type: application/json" \
+  -d '{"difficulty": 3, "seed": 42}'
 ```
 
 ### GET /state
@@ -283,7 +290,7 @@ curl -X POST "http://localhost:7860/step" \
 ```bash
 open http://localhost:7860
 ```
-> **Cinematic Intelligence Dashboard:** The frontend features a beautiful dark-mode glassmorphic interface built to emulate premium SRE command centers. It actively renders a **Live Telemetry Chart** graphing CPU and Latency metrics sequentially across the pipeline, while an asynchronous **Typewriter Engine** physically writes out the LLM's reasoning protocols step-by-step.
+> **Cinematic Intelligence Dashboard:** Dark-mode glassmorphic interface with a Live Telemetry Chart (Chart.js) graphing CPU and Latency sequentially across the pipeline, and a Typewriter Engine that renders the LLM's reasoning step-by-step.
 
 ### GET /health
 ```bash
@@ -294,8 +301,6 @@ curl "http://localhost:7860/health"
 
 ## 8. Baseline Benchmark Results
 
-The environment effectively discriminates between frontier models, penalizing agents lacking multi-step recall or those prone to hallucinating actions under tension.
-
 Evaluated locally with `seed=42` across 5 tasks.
 
 | Model | Size | Total Reward | Score % | Catastrophic Failures | Time |
@@ -304,28 +309,23 @@ Evaluated locally with `seed=42` across 5 tasks.
 | **Gemma 3** | 12B | 3.24 / 5.0 | 64.8% | 0 | 78.6s |
 | **Qwen 2.5** | 14B | 1.27 / 5.0 | 25.4% | 1 (Stage 2 Blocked) | 277.5s |
 
-> The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, securing partials but rarely achieving `1.0` Optimal rewards. By contrast, massive models like Llama 3.3 70B successfully detect security traps in the PR diff and reject them instantly protecting the environment.
-
-Key observations:
-- Strong models score stable ~0.66 baselines by aggressively blocking risks.
-- qwen:14b scores catastrophic (0.0) on Build Gate, then anchors at 0.19 — 
-  demonstrates the environment penalises wrong reasoning, not just wrong answers
-- Harder tasks (Nightmare, Deceptive) separate strong from weak models
-- Fast architectures (Groq) can blaze through standard OpenEnv transitions in less than 2 seconds!
+> The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, while larger models successfully detect security traps and reject them instantly.
 
 ---
 
-## 9. Compliance
+## 9. Compliance Checklist
 
 - [x] **step/reset/state API** — All three endpoints present
-- [x] **Reward range [0.01, 0.99]** — All rewards fiercely normalised and clamped
+- [x] **Reward range [0.01, 0.99]** — All rewards strictly clamped, never exactly 0.0 or 1.0
+- [x] **Observation bounds** — All bounded fields clamped in `_generate_observation()` via universal safety clamp
 - [x] **info = {} always** — Zero leakage through info dict
-- [x] **step() never crashes** — Full try/except wrapping
-- [x] **Deterministic with seed** — random.seed() called once in reset()
-- [x] **openenv.yaml** — Fully compliant with 5 tasks
-- [x] **baseline_script** — inference.py with OpenAI client, env vars, seed=42
-- [x] **Grader variance** — All 14 scenarios show reward variance
-- [x] **Pipeline State Propagation** — Verified cascading state
-- [x] **HITL Simulation** — Stage 4b with sre_response
-- [x] **No hardcoded fallback URLs** — `API_BASE_URL` strongly requires `os.environ[]` with no default, so the judges' LiteLLM proxy correctly injects at evaluation.
-- [x] **Multi-model validation** — Benchmarked natively across `llama-3.3-70b` (HF/Groq), `mistral-large`, `gemma3:12b`, and `qwen:14b`
+- [x] **step() never crashes** — Full try/except wrapping, returns 0.01 on error
+- [x] **Deterministic with seed** — `self.rng = random.Random(seed)` in reset()
+- [x] **openenv.yaml** — 5 tasks, `score_range: [0.01, 0.99]`, `spec_version: 1`
+- [x] **baseline_script** — `inference.py` with OpenAI client, env var config
+- [x] **server.app:main** — Functional entry point with deterministic baseline policy
+- [x] **Grader variance** — All 14 scenarios show reward variance across 4 actions
+- [x] **Pipeline State Propagation** — Verified cascading state effects
+- [x] **HITL Simulation** — Stage 4b with `sre_response`
+- [x] **[START]/[STEP]/[END] logging** — Strict format in both `inference.py` and `server/app.py`
+- [x] **Multi-model validation** — Benchmarked across `llama-3.3-70b`, `gemma3:12b`, `qwen:14b`

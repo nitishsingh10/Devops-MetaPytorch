@@ -38,7 +38,7 @@ def main():
         seed = task["seed"]
 
         obs_str = env.reset(difficulty=difficulty, seed=seed)
-        print(f"[START] task={safe_name} env=devops_release_commander", flush=True)
+        print(f"[START] task={task_name} env=devops_release_commander", flush=True)
 
         step_num = 0
         done = False
@@ -68,7 +68,7 @@ def main():
 
         success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 else "false"
         rewards_str = ",".join(f"{r:.2f}" for r in step_rewards) if step_rewards else "0.01"
-        print(f"[END] success={success_val} steps={max(1, step_num)} rewards={rewards_str}", flush=True)
+        print(f"[END] task={task_name} score={final_score:.4f}", flush=True)
 
 
 def _baseline_policy(obs: dict) -> int:

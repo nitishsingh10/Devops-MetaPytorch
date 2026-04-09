@@ -129,7 +129,7 @@ def main():
         safe_task_name = task_name.replace(" ", "_").lower()
 
         # ── [START] structured log ────────────────────────────
-        print(f"[START] task={safe_task_name} env=devops_release_commander model={MODEL_NAME}", flush=True)
+        print(f"[START] task={task_name} env=devops_release_commander model={MODEL_NAME}", flush=True)
 
         is_timeout = False
 
@@ -165,7 +165,7 @@ def main():
         success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 and not is_timeout else "false"
         safe_rewards = [max(0.01, min(0.99, r)) for r in step_rewards]
         rewards_str = ",".join(f"{r:.2f}" for r in safe_rewards) if safe_rewards else "0.01"
-        print(f"[END] success={success_val} steps={max(1, step_num)} rewards={rewards_str}", flush=True)
+        print(f"[END] task={task_name} score={final_score:.4f}", flush=True)
 
         results.append(
             {"task": task_name, "difficulty": diff, "reward": final_score}

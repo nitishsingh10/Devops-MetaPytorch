@@ -101,6 +101,13 @@
     }
     .mono { font-family: var(--font-mono); }
     
+    /* Tabs F5 F6 */
+    .tab-controls { display: flex; gap: 4px; background: var(--bg-main); padding: 4px; border-radius: 10px; border: 1px solid var(--border-panel);}
+    .tab-btn { font-family: var(--font-sans); font-size: 12px; font-weight: 700; padding: 6px 12px; background: transparent; border: none; border-radius: 6px; color: var(--text-muted); cursor: pointer; transition: all 0.2s;}
+    .tab-btn:hover:not(:disabled) { background: rgba(0,0,0,0.05); color: var(--text-main); }
+    .tab-btn.active { background: #FFF; color: var(--theme-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .tab-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
     /* Buttons */
     .btn {
       font-family: var(--font-sans); font-size: 14px; font-weight: 600;
@@ -116,13 +123,7 @@
     .btn-agent { width: 100%; border: 1px solid var(--border-panel); color: var(--text-main); margin-top: 12px; background: #FFF; }
     .btn-agent:hover:not(:disabled) { background: var(--bg-main); border-color: #CCC; }
 
-    /* F1 Threat Profile */
-    .threat-row { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-sans); font-size: 13px; font-weight: 500; margin-bottom: 12px; }
-    .threat-label { width: 110px; color: var(--text-muted); }
-    .threat-bar { flex-grow: 1; margin: 0 12px; height: 8px; background: var(--border-panel); border-radius: 4px; overflow: hidden; position: relative; }
-    .threat-bar-fill { height: 100%; position: absolute; left: 0; top: 0; border-radius: 4px; }
-    .threat-badge { padding: 4px 8px; font-size: 11px; font-weight: 700; border-radius: 6px; text-align: center; width: 64px; }
-    
+    /* Threat Profile (Redesigned) */
     @keyframes pulse-red-border {
       0%, 100% { border-color: var(--status-red); box-shadow: 0 0 0 2px rgba(235, 87, 87, 0.2); }
       50% { border-color: rgba(235, 87, 87, 0.5); box-shadow: none; }
@@ -146,7 +147,7 @@
     .pipeline-node { z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 60px; }
     .node-circle { width: 36px; height: 36px; background: #FFF; border: 2px solid var(--border-panel); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--font-sans); font-weight: 700; font-size: 14px; color: var(--text-muted); transition: all 0.3s; }
     .node-label { font-family: var(--font-sans); font-size: 11px; font-weight: 600; text-align: center; color: var(--text-muted); }
-    .node-active .node-circle { background: var(--theme-primary); border-color: var(--theme-primary); color: #FFF; box-shadow: 0 4px 12px rgba(30,110,67,0.3); }
+    .node-active .node-circle { background: var(--theme-primary) !important; border-color: var(--theme-primary) !important; color: #FFF !important; box-shadow: 0 4px 12px rgba(30,110,67,0.3); }
     .node-active .node-label { color: var(--text-main); }
     
     /* Observation Panel */
@@ -169,12 +170,13 @@
     .timeline-anim { animation: slideInX 250ms ease-out forwards; }
 
     /* Telemetry Grid */
-    .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;}
     .chart-wrapper { height: 140px; background: var(--bg-main); border-radius: 12px; border: 1px solid var(--border-panel); position: relative; padding: 12px; }
     .chart-val { position: absolute; top: 12px; right: 12px; font-family: var(--font-sans); font-size: 12px; font-weight: 700; z-index: 10; }
     .chart-label { position: absolute; top: 12px; left: 12px; font-family: var(--font-sans); font-size: 12px; font-weight: 600; color: var(--text-muted); }
-    .coverage-bar { margin-top: 16px; display: flex; align-items: center; gap: 12px; font-family: var(--font-sans); font-weight: 600; font-size: 13px; }
+    .coverage-bar { margin-top: 4px; display: flex; align-items: center; gap: 12px; font-family: var(--font-sans); font-weight: 600; font-size: 13px; }
     .cov-blocks { flex-grow: 1; height: 8px; background: var(--border-panel); border-radius: 4px; overflow: hidden; position: relative; }
+    .threat-bar-fill { height: 100%; position: absolute; left: 0; top: 0; border-radius: 4px; }
 
     /* Reward Anatomy */
     .reward-row { display: flex; justify-content: space-between; font-family: var(--font-sans); font-size: 13px; font-weight: 600; margin-bottom: 12px; }
@@ -212,7 +214,7 @@
     .ctrl-input:focus { outline: none; border-color: var(--theme-primary); }
 
     /* Episode Log */
-    .log-line { font-family: var(--font-sans); font-size: 13px; font-weight: 500; margin-bottom: 8px; animation: slideInX 200ms; background: var(--bg-main); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-panel); }
+    .log-line { font-family: var(--font-sans); font-size: 13px; font-weight: 500; margin-bottom: 8px; animation: slideInX 200ms; background: #FFF; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-panel); }
     .log-step { color: var(--text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; margin-right: 8px; }
     .log-stage { color: var(--text-main); font-weight: 600; }
     .log-reward { font-weight: 700; float: right; }
@@ -298,10 +300,10 @@
         <div class="health-row"><span class="health-label">API Calls</span><span id="health-apicalls">0 req / 0 err</span></div>
       </div>
 
-      <!-- F1 Threat Profile Card -->
+      <!-- F1 Threat Profile Card (Redesigned with Grid) -->
       <div class="panel hidden-initial" id="threat-profile">
-        <div class="panel-title">Threat Profile</div>
-        <div id="tp-content"></div>
+        <div class="panel-title">Threat Assessment</div>
+        <div id="tp-content" style="display:flex; flex-direction:column; gap:16px;"></div>
       </div>
 
       <!-- F6 Benchmark Challenger -->
@@ -331,7 +333,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
           <div class="panel-title" style="margin-bottom:0;" id="obs-title">Observation Details</div>
           <div>
-            <span style="font-size:11px; font-weight:700; margin-right:12px; padding: 4px 8px; border-radius: 6px; display:none;" id="obs-diff-badge"></span>
+            <span style="font-size:11px; font-weight:700; margin-right:12px; padding: 4px 8px; border-radius: 6px; display:none; color:#FFF;" id="obs-diff-badge"></span>
             <button class="copy-json-btn" onclick="copyObs()" id="btn-copy-json">Copy JSON</button>
           </div>
         </div>
@@ -349,47 +351,78 @@
         <div id="timeline-summary" style="margin-top:12px; font-size:12px; font-weight:500; font-style:italic; color:var(--text-muted);"></div>
       </div>
 
-      <!-- F17 Live Telemetry -->
+      <!-- F17 Live Telemetry (Tabbed) -->
       <div class="panel">
-        <div class="panel-title">Live Telemetry</div>
-        <div class="telemetry-grid">
-           <div class="chart-wrapper"><div class="chart-label">Error Rate</div><div class="chart-val color-red" id="val-err">—</div><canvas id="chart-err"></canvas></div>
-           <div class="chart-wrapper"><div class="chart-label">Latency ms</div><div class="chart-val color-cyan" id="val-lat">—</div><canvas id="chart-lat"></canvas></div>
-           <div class="chart-wrapper"><div class="chart-label">CPU Usage</div><div class="chart-val color-amber" id="val-cpu">—</div><canvas id="chart-cpu"></canvas></div>
-           <div class="chart-wrapper"><div class="chart-label">Traffic Load</div><div class="chart-val color-main" id="val-tra">—</div><canvas id="chart-tra"></canvas></div>
-        </div>
-        <div class="coverage-bar">
-          <span style="width:120px;">Code Coverage</span>
-          <div class="cov-blocks"><div class="threat-bar-fill bg-amber" id="cov-bar" style="width:0%;"></div></div>
-          <span id="cov-val" class="mono">—</span>
-        </div>
-      </div>
-
-      <!-- Episode Log -->
-      <div class="panel">
-        <div class="panel-title">Episode Log</div>
-        <div id="log-body" style="height: 200px; overflow-y: auto; padding-right: 8px;">
-          <div style="text-align:center; padding: 20px; color:var(--text-muted); font-weight: 500;">Awaiting pipeline changes...</div>
-        </div>
-      </div>
-
-      <!-- F9 Narrative Report & F7 Episode DNA (Post-Episode) -->
-      <div id="post-episode-content" class="hidden-initial">
-        <div class="panel">
-          <div class="panel-title">Incident Report</div>
-          <div id="narrative-body" style="line-height:1.6; color:var(--text-main); font-size:14px; font-weight:500; white-space:pre-wrap;"></div>
-        </div>
-        <div class="panel" style="margin-top:20px;">
-          <div class="panel-title">Episode DNA Sequence</div>
-          <div style="margin-bottom:12px; font-size:13px; font-weight:500;">
-             <span style="color:var(--text-muted)">Episode ID:</span> <span id="dna-ep" style="font-weight:700; margin-right:16px;"></span>
-             <span style="color:var(--text-muted)">Scenario:</span> <span id="dna-scen" style="font-weight:700; margin-right:16px;"></span>
-             <span style="color:var(--text-muted)">Final Score:</span> <span id="dna-score" class="color-green" style="font-weight:700;"></span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div class="panel-title" style="margin-bottom:0;">Live Telemetry</div>
+          <div class="tab-controls">
+            <button class="tab-btn active" id="btn-chart-base" onclick="switchChartTab('base')">Standard</button>
+            <button class="tab-btn" id="btn-chart-exp" onclick="switchChartTab('expanded')">Expanded Analysis</button>
           </div>
-          <div class="mono" style="background:var(--bg-main); border:1px solid var(--border-panel); border-radius:8px; padding:12px; font-size:13px; margin-bottom:16px; word-break:break-all; color:var(--text-main);" id="dna-string"></div>
-          <div style="display:flex; gap:12px;">
-             <button class="btn btn-outline" onclick="replayDNA()" id="btn-replay">Replay Episode</button>
-             <button class="btn btn-sys" onclick="copyDNA()" id="btn-copy-dna">Copy DNA String</button>
+        </div>
+        
+        <!-- Standard Tab base metrics -->
+        <div id="chart-tab-base">
+          <div class="telemetry-grid">
+             <div class="chart-wrapper"><div class="chart-label">Error Rate</div><div class="chart-val color-red" id="val-err">—</div><canvas id="chart-err"></canvas></div>
+             <div class="chart-wrapper"><div class="chart-label">Latency ms</div><div class="chart-val color-cyan" id="val-lat">—</div><canvas id="chart-lat"></canvas></div>
+             <div class="chart-wrapper"><div class="chart-label">CPU Usage</div><div class="chart-val color-amber" id="val-cpu">—</div><canvas id="chart-cpu"></canvas></div>
+             <div class="chart-wrapper"><div class="chart-label">Traffic Load</div><div class="chart-val color-main" id="val-tra">—</div><canvas id="chart-tra"></canvas></div>
+          </div>
+          <div class="coverage-bar">
+            <span style="width:120px;">Code Coverage</span>
+            <div class="cov-blocks"><div class="threat-bar-fill bg-amber" id="cov-bar" style="width:0%;"></div></div>
+            <span id="cov-val" class="mono">—</span>
+          </div>
+        </div>
+
+        <!-- Expanded Analysis Tab metrics -->
+        <div id="chart-tab-expanded" class="hidden-initial">
+          <div class="telemetry-grid" style="margin-bottom:0;">
+             <div class="chart-wrapper"><div class="chart-label">Author Trust Metric</div><div class="chart-val color-green" id="val-exp-trust">—</div><canvas id="chart-exp-trust"></canvas></div>
+             <div class="chart-wrapper"><div class="chart-label">Coverage Progress </div><div class="chart-val color-green" id="val-exp-cov">—</div><canvas id="chart-exp-cov"></canvas></div>
+             <div class="chart-wrapper"><div class="chart-label">Files Changed</div><div class="chart-val color-cyan" id="val-exp-fc">—</div><canvas id="chart-exp-fc"></canvas></div>
+             <div class="chart-wrapper"><div class="chart-label">Tests Failed</div><div class="chart-val color-red" id="val-exp-tf">—</div><canvas id="chart-exp-tf"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unified Mission Logs Panel F6 -->
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-panel); padding-bottom:12px; margin-bottom:16px;">
+          <div class="panel-title" style="margin-bottom:0;">Mission Logs</div>
+          <div class="tab-controls" style="display:flex; gap:8px;">
+            <button class="tab-btn active" id="btn-log-ep" onclick="switchLogTab('log')">Episode Log</button>
+            <button class="tab-btn" id="btn-log-report" onclick="switchLogTab('report')">Incident Report</button>
+            <button class="tab-btn" id="btn-log-dna" onclick="switchLogTab('dna')">DNA Sequence</button>
+          </div>
+        </div>
+
+        <!-- Tab 1: Live Log -->
+        <div id="log-tab-log">
+          <div id="log-body" style="height: 250px; overflow-y: auto; padding-right: 8px; background:var(--bg-main); border-radius:12px; border:1px solid var(--border-panel); padding: 12px;">
+            <div style="text-align:center; padding: 20px; color:var(--text-muted); font-weight: 500;">Awaiting pipeline changes...</div>
+          </div>
+        </div>
+        
+        <!-- Tab 2: Incident Report F9 -->
+        <div id="log-tab-report" class="hidden-initial">
+          <div id="narrative-body" style="line-height:1.6; color:var(--text-main); font-size:14px; font-weight:500; white-space:pre-wrap; background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border-panel); min-height: 250px;">Incident Report requires episode completion to render.</div>
+        </div>
+
+        <!-- Tab 3: DNA F7 -->
+        <div id="log-tab-dna" class="hidden-initial">
+          <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border-panel); min-height: 250px;">
+              <div style="margin-bottom:16px; font-size:13px; font-weight:500;">
+                 <span style="color:var(--text-muted)">Episode ID:</span> <span id="dna-ep" style="font-weight:700; margin-right:16px;">N/A</span>
+                 <span style="color:var(--text-muted)">Scenario:</span> <span id="dna-scen" style="font-weight:700; margin-right:16px;">N/A</span>
+                 <span style="color:var(--text-muted)">Final Score:</span> <span id="dna-score" class="color-green" style="font-weight:700;">—</span>
+              </div>
+              <div class="mono" style="background:#FFF; border:1px solid var(--border-panel); border-radius:8px; padding:12px; font-size:13px; margin-bottom:20px; word-break:break-all; color:var(--text-main);" id="dna-string">Sequence empty.</div>
+              <div style="display:flex; gap:12px;">
+                 <button class="btn btn-outline" onclick="replayDNA()" id="btn-replay">Replay Episode</button>
+                 <button class="btn btn-sys" onclick="copyDNA()" id="btn-copy-dna">Copy DNA String</button>
+              </div>
           </div>
         </div>
       </div>
@@ -553,6 +586,12 @@
     let latencyData = [];
     let errorRateData = [];
     let trafficData = [];
+    
+    // Expanded metrics data
+    let expTrustData = [];
+    let expCovData = [];
+    let expFcData = [];
+    let expTfData = [];
 
     let sessionEpisodes = 0;
     let sessionTotalReward = 0;
@@ -657,8 +696,44 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       setTimeout(() => { div.style.opacity = 0; setTimeout(()=>div.remove(), 300); }, 3000);
     }
 
+    // Tabs switching logic F5 F6
+    function switchChartTab(tab) {
+        document.getElementById('btn-chart-base').classList.remove('active');
+        document.getElementById('btn-chart-exp').classList.remove('active');
+        document.getElementById('chart-tab-base').classList.add('hidden-initial');
+        document.getElementById('chart-tab-expanded').classList.add('hidden-initial');
+
+        if(tab === 'base') {
+            document.getElementById('btn-chart-base').classList.add('active');
+            document.getElementById('chart-tab-base').classList.remove('hidden-initial');
+        } else {
+            document.getElementById('btn-chart-exp').classList.add('active');
+            document.getElementById('chart-tab-expanded').classList.remove('hidden-initial');
+        }
+    }
+
+    function switchLogTab(tab) {
+        document.getElementById('btn-log-ep').classList.remove('active');
+        document.getElementById('btn-log-report').classList.remove('active');
+        document.getElementById('btn-log-dna').classList.remove('active');
+        
+        document.getElementById('log-tab-log').classList.add('hidden-initial');
+        document.getElementById('log-tab-report').classList.add('hidden-initial');
+        document.getElementById('log-tab-dna').classList.add('hidden-initial');
+
+        if(tab === 'log') {
+            document.getElementById('btn-log-ep').classList.add('active');
+            document.getElementById('log-tab-log').classList.remove('hidden-initial');
+        } else if(tab === 'report') {
+            document.getElementById('btn-log-report').classList.add('active');
+            document.getElementById('log-tab-report').classList.remove('hidden-initial');
+        } else if(tab === 'dna') {
+            document.getElementById('btn-log-dna').classList.add('active');
+            document.getElementById('log-tab-dna').classList.remove('hidden-initial');
+        }
+    }
+
     function initCharts() {
-        // Redefined for light theme
         Chart.defaults.color = '#8A92A6';
         Chart.defaults.font.family = "'DM Sans', sans-serif";
         
@@ -677,10 +752,17 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
                 }
             });
         };
-        telemetryCharts.err = createC('chart-err', '#EB5757', errorRateData, 20); // red
-        telemetryCharts.lat = createC('chart-lat', '#2D9CDB', latencyData, 1200); // blue
-        telemetryCharts.cpu = createC('chart-cpu', '#F2994A', cpuData, 100); // orange
-        telemetryCharts.tra = createC('chart-tra', '#9B51E0', trafficData, 100); // purple
+        // Base telemetry
+        telemetryCharts.err = createC('chart-err', '#EB5757', errorRateData, 20); 
+        telemetryCharts.lat = createC('chart-lat', '#2D9CDB', latencyData, 1200); 
+        telemetryCharts.cpu = createC('chart-cpu', '#F2994A', cpuData, 100); 
+        telemetryCharts.tra = createC('chart-tra', '#9B51E0', trafficData, 100); 
+        
+        // Expanded telemetry F5
+        telemetryCharts.extru = createC('chart-exp-trust', '#27AE60', expTrustData, 1);
+        telemetryCharts.excov = createC('chart-exp-cov', '#27AE60', expCovData, 100);
+        telemetryCharts.exfc  = createC('chart-exp-fc', '#2D9CDB', expFcData, 50); // files changed dynamic max
+        telemetryCharts.extf  = createC('chart-exp-tf', '#EB5757', expTfData, 10); // tests failed dynamic max
     }
 
     function updateChartsUI() {
@@ -701,38 +783,57 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         document.getElementById('cov-bar').style.width = `${barW}%`;
         document.getElementById('cov-bar').className = `threat-bar-fill ${cov<60?'bg-red':cov>80?'bg-green':'bg-amber'}`;
         
+        // Update extended chart displays
+        document.getElementById('val-exp-trust').innerText = `${(currentObs.author_trust_score||0).toFixed(2)}`;
+        document.getElementById('val-exp-cov').innerText = `${cov.toFixed(1)}%`;
+        document.getElementById('val-exp-fc').innerText = `${currentObs.pr_files_changed||0}`;
+        document.getElementById('val-exp-tf').innerText = `${currentObs.tests_failed||0}`;
+
         telemetryCharts.lat.options.scales.y.max = Math.max(...latencyData, 1000) + 200;
+        telemetryCharts.exfc.options.scales.y.max = Math.max(...expFcData, 5) + 5;
+        telemetryCharts.extf.options.scales.y.max = Math.max(...expTfData, 5) + 5;
+        
         Object.values(telemetryCharts).forEach(ch => ch.update());
     }
 
+    // F1 Threat Profile Grid Redesign (Bug/Enhancement #3)
     function updateThreatProfile() {
         if(!currentObs) return;
         let tp = document.getElementById('threat-profile');
         tp.classList.remove('hidden-initial');
         let html = '';
         
-        const b = (v,mx,clr) => { let pct=Math.min(100,(v/mx)*100); return `<div class="threat-bar"><div class="threat-bar-fill bg-${clr}" style="width:${pct}%"></div></div>`; };
-        
         let aTr = currentObs.author_trust_score||0; let aClr = aTr<0.3?'red':aTr<0.6?'amber':'green';
-        html += `<div class="threat-row"><span class="threat-label">Author Trust</span>${b(aTr,1,aClr)}<span class="threat-badge bg-${aClr}">${aTr.toFixed(2)}</span></div>`;
-        
         let diff = (currentObs.pr_diff_summary||"").toLowerCase();
         let kw = ["sql", "drop table", "eval(", "exec(", "token =", "exfiltration", "backdoor", "base64", "subprocess"];
         let anc = kw.filter(k=>diff.includes(k)).length; let anClr = anc>=2?'red':anc==1?'amber':'green';
-        html += `<div class="threat-row"><span class="threat-label">Code Flags</span>${b(Math.min(anc,3),3,anClr)}<span class="threat-badge bg-${anClr}">${anc} Issues</span></div>`;
-        
-        let alts = currentObs.active_alerts||[]; let p1 = alts.some(a=>a.includes('P1'));
-        let alClr = alts.length==0?'green':p1?'red':'amber';
-        html += `<div class="threat-row"><span class="threat-label">Alert Status</span>${b(p1?10:alts.length?5:0,10,alClr)}<span class="threat-badge bg-${alClr}">${p1?'CRITICAL':alts.length?'WARNING':'CLEAR'}</span></div>`;
+        let alts = currentObs.active_alerts||[]; let p1 = alts.some(a=>a.includes('P1')); let alClr = alts.length==0?'green':p1?'red':'amber';
 
         let riskAvg = (aTr<0.3?2:aTr<0.6?1:0) + (anc>=2?2:anc==1?1:0) + (p1?2:alts.length?1:0);
-        let ovr = riskAvg >= 4 ? 'red' : riskAvg >= 2 ? 'amber' : 'green';
+        let ovr = riskAvg >= 4 ? 'bg-red' : riskAvg >= 2 ? 'bg-amber' : 'bg-green';
         let txt = riskAvg >= 4 ? 'CRITICAL RISK' : riskAvg >= 2 ? 'ELEVATED RISK' : 'SYSTEM NOMINAL';
         
-        html += `<hr style="border:0; border-top:1px solid var(--border-panel); margin:16px 0;">`;
-        html += `<div style="text-align:center; font-weight:700; padding:8px;" class="color-${ovr}">${txt}</div>`;
+        html += `<div style="border-radius:12px; padding:16px; margin-bottom:0; color:#FFF;" class="${ovr}">
+             <div style="font-size:11px; opacity:0.8; font-weight:700; text-transform:uppercase;">Overall Posture</div>
+             <div style="font-size:20px; font-weight:700; margin-top:4px; letter-spacing:1px;">${txt}</div>
+        </div>`;
 
-        if(ovr === 'red') tp.classList.add('danger-pulse'); else tp.classList.remove('danger-pulse');
+        html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+             <div style="background:var(--bg-main); border:1px solid var(--border-panel); padding:12px; border-radius:12px;">
+                 <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Author Trust</div>
+                 <div style="font-size:20px; font-weight:700; margin-top:4px;" class="color-${aClr}">${aTr.toFixed(2)}</div>
+             </div>
+             <div style="background:var(--bg-main); border:1px solid var(--border-panel); padding:12px; border-radius:12px;">
+                 <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Code Flags</div>
+                 <div style="font-size:20px; font-weight:700; margin-top:4px;" class="color-${anClr}">${anc} Issues</div>
+             </div>
+             <div style="background:var(--bg-main); border:1px solid var(--border-panel); padding:12px; border-radius:12px; grid-column: span 2;">
+                 <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Alert Status</div>
+                 <div style="font-size:16px; font-weight:700; margin-top:4px;" class="color-${alClr}">${p1?'P1 CRITICAL ACTIVE':alts.length?'WARNINGS ACTIVE':'ALL SYSTEMS CLEAR'}</div>
+             </div>
+        </div>`;
+
+        if(ovr === 'bg-red') tp.classList.add('danger-pulse'); else tp.classList.remove('danger-pulse');
         document.getElementById('tp-content').innerHTML = html;
     }
 
@@ -743,21 +844,34 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       const diff = document.getElementById('difficulty-select').value;
       const seed = document.getElementById('seed-input').value;
       const btn = document.getElementById('btn-generate');
-      btn.disabled = true; btn.innerHTML = 'Generating...';
+      
+      // Reset pipeline formally before API call finishes (Bug/Enhancement #1)
+      for(let i=1; i<=4; i++) {
+          let el = document.getElementById(`pipe-${i}`);
+          let c = el.querySelector('.node-circle');
+          c.style.background = '#FFF'; c.style.borderColor = 'var(--border-panel)'; c.style.color = 'var(--text-muted)'; c.innerText = i;
+          el.classList.remove('node-active');
+      }
+      document.getElementById('pipe-4b').classList.add('hidden-initial');
 
+      btn.disabled = true; btn.innerHTML = 'Generating...';
       try {
+        switchLogTab('log'); // Switch back to live log tab automatically
         const data = await apiGet(`/reset?difficulty=${diff}&seed=${seed}`);
         prevObs = null; currentObs = data.observation; allObs = [JSON.parse(JSON.stringify(currentObs))];
         episodeActive = true; episodeDone = false; logEntries = [];
         
         telemetryLabels.length=0; cpuData.length=0; latencyData.length=0; errorRateData.length=0; trafficData.length=0;
+        expTrustData.length=0; expCovData.length=0; expFcData.length=0; expTfData.length=0;
+
         if(currentObs && currentObs.stage) {
            telemetryLabels.push('S'+currentObs.stage);
            cpuData.push(currentObs.cpu_pct||0); latencyData.push(currentObs.latency_p99_ms||0); errorRateData.push(currentObs.error_rate_pct||0); trafficData.push(currentObs.traffic_level_pct||0);
+           expTrustData.push(currentObs.author_trust_score||0); expCovData.push(currentObs.coverage_pct||0); expFcData.push(currentObs.pr_files_changed||0); expTfData.push(currentObs.tests_failed||0);
         }
         updateChartsUI(); renderPipeline(); renderObservation(); updateThreatProfile(); showActions(true); resetResultPanels();
         
-        document.getElementById('log-body').innerHTML = '<div class="log-line" style="color:var(--text-muted); padding:16px; text-align:center; box-shadow:none; border:none; background:transparent;">Episode initialized — awaiting action selection.</div>';
+        document.getElementById('log-body').innerHTML = '<div class="log-line" style="text-align:center; box-shadow:none; border:none; background:transparent;"><div style="padding:16px; color:var(--text-muted); font-weight:500;">Episode initialized — awaiting action selection.</div></div>';
       } catch (e) { showToast('Error: ' + e.message); } finally { btn.disabled = false; btn.innerHTML = 'Generate Episode'; }
     }
 
@@ -784,7 +898,9 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         if (done) {
           episodeDone = true; updatePipelineStatus(prevStage, action === 1 ? 'failed' : 'completed'); showActions(false);
           if(currentObs.stage!=='4b') {
-              telemetryLabels.push('S4'); cpuData.push(currentObs.cpu_pct||0); latencyData.push(currentObs.latency_p99_ms||0); errorRateData.push(currentObs.error_rate_pct||0); trafficData.push(currentObs.traffic_level_pct||0);
+              telemetryLabels.push('S4'); 
+              cpuData.push(currentObs.cpu_pct||0); latencyData.push(currentObs.latency_p99_ms||0); errorRateData.push(currentObs.error_rate_pct||0); trafficData.push(currentObs.traffic_level_pct||0);
+              expTrustData.push(currentObs.author_trust_score||0); expCovData.push(currentObs.coverage_pct||0); expFcData.push(currentObs.pr_files_changed||0); expTfData.push(currentObs.tests_failed||0);
           }
           updateChartsUI(); renderResult(reward, done); updateSessionStataVariables(reward); finalizeEpisode(reward);
         } else {
@@ -793,6 +909,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
           
           telemetryLabels.push('S'+currentObs.stage);
           cpuData.push(currentObs.cpu_pct||0); latencyData.push(currentObs.latency_p99_ms||0); errorRateData.push(currentObs.error_rate_pct||0); trafficData.push(currentObs.traffic_level_pct||0);
+          expTrustData.push(currentObs.author_trust_score||0); expCovData.push(currentObs.coverage_pct||0); expFcData.push(currentObs.pr_files_changed||0); expTfData.push(currentObs.tests_failed||0);
           updateChartsUI();
 
           if(currentObs.stage === '4b' && !isReplay) {
@@ -864,18 +981,20 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       currentObs = null; prevObs = null; allObs = []; episodeActive = false; episodeDone = false; logEntries = [];
       for(let i=1; i<=4; i++) {
           let el = document.getElementById(`pipe-${i}`);
-          el.querySelector('.node-circle').style.background = '#FFF';
-          el.querySelector('.node-circle').style.borderColor = 'var(--border-panel)';
-          el.querySelector('.node-circle').style.color = 'var(--text-muted)';
-          el.querySelector('.node-circle').innerText = i;
+          let c = el.querySelector('.node-circle');
+          c.style.background = '#FFF'; c.style.borderColor = 'var(--border-panel)'; c.style.color = 'var(--text-muted)'; c.innerText = i;
           el.classList.remove('node-active');
       }
       document.getElementById('pipe-4b').classList.add('hidden-initial');
+      document.getElementById('obs-diff-badge').style.display = 'none';
       document.getElementById('obs-content').innerHTML = '<div style="text-align:center; padding: 32px; color:var(--text-muted); font-weight: 500;">No active episode running. Generate an episode to begin.</div>';
       document.getElementById('actions-panel').classList.add('hidden-initial');
       resetResultPanels();
+      switchLogTab('log');
       document.getElementById('log-body').innerHTML = '<div style="text-align:center; padding: 20px; color:var(--text-muted); font-weight: 500;">Awaiting pipeline changes...</div>';
-      telemetryLabels.length=0; cpuData.length=0; latencyData.length=0; errorRateData.length=0; trafficData.length=0; updateChartsUI();
+      telemetryLabels.length=0; cpuData.length=0; latencyData.length=0; errorRateData.length=0; trafficData.length=0;
+      expTrustData.length=0; expCovData.length=0; expFcData.length=0; expTfData.length=0;
+      updateChartsUI();
     }
 
     function renderObservation() {
@@ -883,7 +1002,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
        document.getElementById('obs-title').innerText = `Stage ${currentObs.stage} Data`;
        let dl = {1:'EASY', 2:'MEDIUM', 3:'HARD', 4:'NIGHTMARE'};
        let db = document.getElementById('obs-diff-badge');
-       db.style.display = 'inline-block'; db.innerText = dl[currentObs.difficulty] || currentObs.difficulty;
+       db.style.display = 'inline-flex'; db.innerText = dl[currentObs.difficulty] || currentObs.difficulty;
        db.className = `bg-${currentObs.difficulty==4?'red':currentObs.difficulty==3?'amber':currentObs.difficulty==2?'cyan':'green'}`;
 
        let h = `<table class="obs-table">`; let f = [];
@@ -898,13 +1017,15 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
                let v = currentObs[k];
                let nv = typeof v==='number' ? (Number.isInteger(v)?v:v.toFixed(2)) : Array.isArray(v)?v.join(', '):v;
                let cl = ''; let dt = '';
+               // Fix the percentage scale infinity issue (Bug #2)
                if(prevObs && prevObs[k] !== undefined && prevObs[k]!==v) {
                    cl = 'field-changed diff-left-slide';
                    if(typeof v==='number') {
-                       let pct = ((v - prevObs[k])/prevObs[k])*100;
-                       if(pct > 5) dt=`<span class="color-${k.includes('reward')||k.includes('cvg')?'green':'amber'}" style="margin-left:12px;font-size:11px;font-weight:700;">▲ +${pct.toFixed(1)}%</span>`;
-                       else if(pct < -5) dt=`<span class="color-${k.includes('error')||k.includes('lat')?'green':'red'}" style="margin-left:12px;font-size:11px;font-weight:700;">▼ ${pct.toFixed(1)}%</span>`;
-                   } else { dt = `<span class="color-primary" style="margin-left:12px;font-size:11px;">Update</span>`; }
+                       let diffVal = v - prevObs[k];
+                       let isPct = k.includes('pct');
+                       if(diffVal > 0) dt=`<span class="color-${k.includes('reward')||k.includes('cvg')?'green':'amber'}" style="margin-left:12px;font-size:11px;font-weight:700;">▲ +${diffVal.toFixed(2)}${isPct?'%':''}</span>`;
+                       else if(diffVal < 0) dt=`<span class="color-${k.includes('error')||k.includes('lat')?'green':'red'}" style="margin-left:12px;font-size:11px;font-weight:700;">▼ ${diffVal.toFixed(2)}${isPct?'%':''}</span>`;
+                   } else { dt = `<span class="color-primary" style="margin-left:12px;font-size:11px; font-weight:700;">Update Shift</span>`; }
                }
                h+=`<tr class="${cl}"><td class="obs-key">${name}</td><td class="obs-val">${nv} ${dt}</td></tr>`;
            }
@@ -953,7 +1074,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         let b = document.getElementById('log-body');
         if(logEntries.length===1) b.innerHTML = ""; 
         let h = `<div class="log-line diff-left-slide">
-          <div><span class="log-step">Step ${logEntries.length}</span> <span class="log-stage">Stage ${stage}</span> <span style="margin-left:12px; color:var(--theme-primary); font-weight:700;">Act: ${action}</span> <span class="log-reward color-${reward>0.6?'green':reward<0.4?'red':'amber'}">${reward>=0?'+':''}${reward.toFixed(2)} pts</span></div>
+          <div><span class="log-step">Step ${logEntries.length}</span> <span class="log-stage">Stage ${stage}</span> <span style="margin-left:12px; color:var(--text-main); font-weight:700;">Act: ${action}</span> <span class="log-reward color-${reward>0.6?'green':reward<0.4?'red':'amber'}">${reward>=0?'+':''}${reward.toFixed(2)} pts</span></div>
           ${reason ? `<div class="log-reason">"${reason}"</div>` : ''}
         </div>`;
         b.innerHTML += h; b.scrollTop = b.scrollHeight;
@@ -961,8 +1082,10 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
     function resetResultPanels() {
         document.getElementById('end-panels').classList.add('hidden-initial');
-        document.getElementById('post-episode-content').classList.add('hidden-initial');
+        // document.getElementById('post-episode-content').classList.add('hidden-initial');
         document.getElementById('timeline-panel').classList.add('hidden-initial');
+        document.getElementById('narrative-body').innerText = "(Episode must be completed to generate incident report)";
+        document.getElementById('dna-string').innerText = "Sequence empty.";
     }
 
     function renderResult(reward, done) {
@@ -987,13 +1110,13 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
     function finalizeEpisode(totalReward) {
         if(totalReward>0.8) { try{ confetti({particleCount:100, spread:70, origin:{y:0.6}, colors:['#1E6E43', '#27AE60', '#E8F5E9']}); }catch(e){} }
-        document.getElementById('post-episode-content').classList.remove('hidden-initial');
+        // Note: The UI for Episode Report is combined inside the Mission Logs tab now matching F6 logic.
         
         let scMatch = (currentObs.episode_id||"").match(/s(\d+)/); let scObj = SCENARIOS.find(x=>x.id===`s${scMatch?scMatch[1]:''}`);
         
-        let text = `Incident Report completed on ${new Date().toLocaleDateString()}.\n\n`;
+        let text = `Incident Report generated on ${new Date().toLocaleDateString()}.\n\n`;
         text += `A ${['low','medium','hard','nightmare'][currentObs.difficulty-1]} severity scenario (ID: ${currentObs.episode_id}) was resolved. `;
-        if(totalReward>=0.8) text += `Pipeline behavior shows excellent deviation handling.`; else text += `Pipeline degraded due to suboptimal resolutions.`;
+        if(totalReward>=0.8) text += `Pipeline behavior shows excellent deviation handling causing no critical states.`; else text += `Pipeline degraded due to suboptimal contextual resolutions.`;
         document.getElementById('narrative-body').innerText = text;
 
         document.getElementById('dna-ep').innerText = currentObs.episode_id||"N/A";
@@ -1002,13 +1125,19 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         let acts = logEntries.map(l=>l.action).join(','); let rwds = logEntries.map(l=>l.reward.toFixed(2)).join(',');
         document.getElementById('dna-string').innerText = `DRC:d${currentObs.difficulty}:s${document.getElementById('seed-input').value}:a${acts}:r${rwds}`;
 
+        // Benchmark Leaderboard Update (Bug/Enhancement #4)
         document.getElementById('benchmark-panel').classList.remove('hidden-initial');
-        let bench = [ {n:'Human Baseline', s:0.83, c:'var(--theme-primary)'}, {n:'Your Score', s:totalReward, c:'var(--accent-amber)'}, {n:'Gemma 12B', s:0.65, c:'var(--text-muted)'} ];
+        let bench = [ 
+           {n:'Llama 3.3 (Groq)', s:0.666, c:'var(--theme-primary)'}, 
+           {n:'Your Score', s:totalReward, c:'var(--accent-amber)'}, 
+           {n:'Gemma 3 12B', s:0.648, c:'var(--text-muted)'},
+           {n:'Qwen 2.5 14B', s:0.254, c:'rgba(0,0,0,0.2)'}
+        ];
         bench.sort((a,b)=>b.s - a.s); let bh = '';
         bench.forEach((b,i)=> {
             let pct = Math.max(0, b.s * 100);
             bh += `<div style="margin-bottom:12px;">
-              <div class="bench-row"><span style="color:${b.c}; font-weight:700;">#${i+1} ${b.n}</span> <span style="font-family:var(--font-mono);">${b.s.toFixed(2)}</span></div>
+              <div class="bench-row"><span style="color:${b.n==='Your Score'?b.c:'var(--text-main)'}; font-weight:700;">#${i+1} ${b.n}</span> <span style="font-family:var(--font-mono); font-size:11px; font-weight:700;">${b.s.toFixed(3)}</span></div>
               <div style="height:6px; background:var(--border-panel); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${pct}%; background:${b.c};"></div></div>
             </div>`;
         });
@@ -1029,13 +1158,13 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         if(!currentObs || !currentObs.episode_id) return;
         let p = document.getElementById('optimal-content'); let m = currentObs.episode_id.match(/s(\d+)/); if(!m) return;
         let scn = SCENARIOS.find(x=>x.id==='s'+m[1]); let an = ["0", "1", "2", "3"];
-        let out = `<div style="margin-bottom:8px;">Selected Action: <span style="font-weight:700;">Action ${act}</span></div>`;
+        let out = `<div style="margin-bottom:8px;">Selected Action: <span style="font-weight:700; color:var(--text-main);">Action ${act}</span></div>`;
         if(scn && scn.optimal && scn.optimal[stg] !== undefined) {
              let opt = scn.optimal[stg];
              if(act === opt) out += `<div class="color-green" style="padding:12px; background:var(--theme-light); border-radius:8px; font-weight:700;">✓ Matched optimal pipeline policy.</div>`;
              else out += `<div class="color-red" style="padding:12px; background:rgba(235,87,87,0.1); border-radius:8px; font-weight:700;">✕ Diverged. Policy expected Action ${opt}.</div>`;
              if(scn.expl) out += `<div style="margin-top:8px; color:var(--text-muted);">${scn.expl}</div>`;
-        } else { out += `<div class="color-amber">Policy allows contextual variance.</div>`; }
+        } else { out += `<div class="color-amber" style="padding:12px; background:var(--bg-main); border:1px solid var(--border-panel); border-radius:8px;">Policy allows contextual variance. No strict singular path.</div>`; }
         p.innerHTML = out;
     }
 

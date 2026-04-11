@@ -905,7 +905,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         prevObs = JSON.parse(JSON.stringify(currentObs));
         
         if (done) {
-          episodeDone = true; updatePipelineStatus(prevStage, reward >= 0.5 ? 'completed' : 'failed'); showActions(false);
+          episodeDone = true; updatePipelineStatus(prevStage, action === 1 ? (reward >= 0.5 ? 'blocked-optimal' : 'failed') : (reward >= 0.5 ? 'completed' : 'failed')); showActions(false);
           if(currentObs.stage!=='4b') {
               telemetryLabels.push('S4'); 
               cpuData.push(currentObs.cpu_pct||0); latencyData.push(currentObs.latency_p99_ms||0); errorRateData.push(currentObs.error_rate_pct||0); trafficData.push(currentObs.traffic_level_pct||0);
@@ -1063,6 +1063,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
        if(el) {
            let c = el.querySelector('.node-circle');
            if(status==='completed') { c.style.background='var(--status-green)'; c.style.borderColor='var(--status-green)'; c.style.color='#FFF'; c.innerText='✓'; }
+           if(status==='blocked-optimal') { c.style.background='var(--accent-cyan)'; c.style.borderColor='var(--accent-cyan)'; c.style.color='#FFF'; c.innerText='🛡️'; }
            if(status==='failed') { c.style.background='var(--status-red)'; c.style.borderColor='var(--status-red)'; c.style.color='#FFF'; c.innerText='✕'; }
        }
     }

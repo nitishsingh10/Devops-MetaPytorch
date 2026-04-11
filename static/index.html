@@ -147,7 +147,7 @@
     .pipeline-node { z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 60px; }
     .node-circle { width: 36px; height: 36px; background: #FFF; border: 2px solid var(--border-panel); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--font-sans); font-weight: 700; font-size: 14px; color: var(--text-muted); transition: all 0.3s; }
     .node-label { font-family: var(--font-sans); font-size: 11px; font-weight: 600; text-align: center; color: var(--text-muted); }
-    .node-active .node-circle { background: var(--theme-primary) !important; border-color: var(--theme-primary) !important; color: #FFF !important; box-shadow: 0 4px 12px rgba(30,110,67,0.3); }
+    .node-active .node-circle { background: var(--theme-primary); border-color: var(--theme-primary); color: #FFF; box-shadow: 0 4px 12px rgba(30,110,67,0.3); }
     .node-active .node-label { color: var(--text-main); }
     
     /* Observation Panel */
@@ -905,7 +905,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         prevObs = JSON.parse(JSON.stringify(currentObs));
         
         if (done) {
-          episodeDone = true; updatePipelineStatus(prevStage, action === 1 ? 'failed' : 'completed'); showActions(false);
+          episodeDone = true; updatePipelineStatus(prevStage, reward >= 0.5 ? 'completed' : 'failed'); showActions(false);
           if(currentObs.stage!=='4b') {
               telemetryLabels.push('S4'); 
               cpuData.push(currentObs.cpu_pct||0); latencyData.push(currentObs.latency_p99_ms||0); errorRateData.push(currentObs.error_rate_pct||0); trafficData.push(currentObs.traffic_level_pct||0);

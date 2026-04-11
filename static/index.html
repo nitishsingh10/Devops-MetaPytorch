@@ -271,7 +271,7 @@
     </div>
     <div class="header-controls">
       <div class="live-text"><div class="live-dot"></div> Env Live</div>
-      <button class="btn-sys" onclick="document.getElementById('analytics-overlay').style.display='flex'">Model Analytics</button>
+      <button class="btn-sys" onclick="document.getElementById('analytics-model-name').innerText = 'Model: ' + document.getElementById('ai-model').value; document.getElementById('analytics-overlay').style.display='flex'">Model Analytics</button>
       <button class="btn-sys" onclick="document.getElementById('shortcuts-overlay').style.display='flex'">Shortcuts</button>
       <button class="btn-sys" onclick="document.getElementById('codex-overlay').style.display='flex'">Codex Database</button>
       <button class="btn-sys mobile-sys-btn" onclick="document.querySelector('.col-left').style.display='flex'">Panels</button>
@@ -519,9 +519,19 @@
   <!-- Expanded Analytics Overlay Modal (New implementation per instruction) -->
   <div id="analytics-overlay" class="overlay" onclick="if(event.target===this)this.style.display='none'">
     <div class="modal" style="max-width:900px; padding: 40px;">
-      <div class="panel-title" style="font-size:20px;">Model Run Analytics</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+         <div class="panel-title" style="font-size:20px; margin-bottom:0;">Model Run Analytics</div>
+         <div id="analytics-model-name" style="font-family:var(--font-sans); font-size:14px; font-weight:700; color:var(--theme-primary); background:var(--theme-light); padding:4px 12px; border-radius:8px;">Model: Manual</div>
+      </div>
       <p style="color:var(--text-muted); margin-bottom:24px; font-weight:500;">Comprehensive plotting records for the active episode's variables, allowing deep diagnostics for model trajectory.</p>
       
+      <div style="margin-bottom:16px;">
+         <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Session Reward Trajectory</div>
+         <div style="height:160px; background:var(--bg-main); border:1px solid var(--border-panel); border-radius:12px; padding:12px;">
+             <canvas id="chart-session-history"></canvas>
+         </div>
+      </div>
+
       <!-- Detailed charts grid -->
       <div class="telemetry-grid" style="margin-bottom:0;">
          <div class="chart-wrapper"><div class="chart-label">Author Trust Metric</div><div class="chart-val color-green" id="val-exp-trust">—</div><canvas id="chart-exp-trust"></canvas></div>
@@ -739,6 +749,20 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
                 }
             });
         };
+        
+        telemetryCharts.session = new Chart(document.getElementById('chart-session-history').getContext('2d'), {
+            type:'bar',
+            data: { labels: [], datasets:[{ data:[], backgroundColor:[], borderRadius:4 }] },
+            options: {
+                responsive:true, maintainAspectRatio:false, animation:{duration:600},
+                plugins:{legend:{display:false}},
+                scales: {
+                    x: { grid:{display:false} },
+                    y: { min:0, max:1, grid:{color:'rgba(0,0,0,0.03)'} }
+                }
+            }
+        });
+
         // Base telemetry
         telemetryCharts.err = createC('chart-err', '#EB5757', errorRateData, 20); 
         telemetryCharts.lat = createC('chart-lat', '#2D9CDB', latencyData, 1200); 
@@ -1089,6 +1113,11 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         document.getElementById('stat-opt').innerText = `${sessionOptimalCount} / ${sessionEpisodes}`;
         sessionHistory.push({ r:reward, s:currentObs.episode_id });
         if(currentObs.episode_id) playedScenarios.add(currentObs.episode_id.split('_')[1]);
+        
+        telemetryCharts.session.data.labels = sessionHistory.map((x,i) => `Ep ${i+1}`);
+        telemetryCharts.session.data.datasets[0].data = sessionHistory.map(x => x.r);
+        telemetryCharts.session.data.datasets[0].backgroundColor = sessionHistory.map(x => x.r > 0.6 ? '#27AE60' : x.r < 0.4 ? '#EB5757' : '#F2994A');
+        telemetryCharts.session.update();
     }
 
     function finalizeEpisode(totalReward) {

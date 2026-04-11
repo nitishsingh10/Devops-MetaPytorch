@@ -1,58 +1,60 @@
 # DevOps Release Commander — AI Handoff Context
-*Generated: 2026-04-07 (Phase 2 Validation Ready)*
+*Updated: 2026-04-09 (Final Compliance Phase)*
 
 Welcome, Assistant. If you are reading this, you are taking over or analysing the **DevOps Release Commander** repository for the Meta PyTorch OpenEnv Hackathon. 
 
 ## 1. Project Goal & Current State
-**Status:** 100% COMPLETE AND FINALIZED FOR SUBMISSION. (Passed Phase 2 strict bounds validation).
-**Objective:** A highly rigorous, fully compliant Reinforcement Learning environment built to the `OpenEnv` specification. It tasks an LLM with acting as a Senior Release Engineer through a 4-stage CI/CD pipeline (PR Triage, Build Gate, Deployment, Monitoring).
+**Status:** PRODUCTION-READY & COMPLIANT. All known validator parsing and range issues have been resolved.
+**Objective:** A fully compliant Reinforcement Learning environment built to the `OpenEnv` specification. It tasks an LLM with acting as a Senior Release Engineer through a 4-stage CI/CD pipeline (PR Triage, Build Gate, Deployment, Monitoring).
 
-Everything in this repository has been strictly audited against the Hackathon's deep validation gates and is live on both GitHub and HuggingFace Spaces.
+Live on both GitHub (`nitishsingh10/Devops-MetaPytorch`) and HuggingFace Spaces (`rolex10/DevOps-Release-Commander`).
 
-## 2. Core Architecture, Files & Critical Design Decisions
+## 2. Core Architecture & Critical Design Decisions
 
 ### `environment.py` (The Mathematical Core)
-- Implements `DevOpsReleaseCmdEnv`. 
-- **The Novelty (Pipeline State Propagation):** Poor decisions in early stages (like allowing a risky PR) do not end the episode, but propagate catastrophic, cascaded metrics to Stage 4 (e.g., massive error rates and latency).
-- **The Novelty (HITL Simulation):** If the agent hallucinates or encounters a Hard scenario, executing `Action 3` (Escalate) triggers Stage 4b, returning a synthetic response from an SRE in `sre_response`.
-- **Absolute OOP Determinism:** To survive massive multi-threaded parallel grading, we explicitly removed all global `import random` dependencies. The environment instantiates `self.rng = random.Random(seed)` natively inside `__init__` and rigidly isolates random states.
-- **Strict Bounds Clamping:** The reward is fiercely clamped to `[0.01, 0.99]` (not `0.0 / 1.0`). Phase 2 validators instantly reject inclusive integer mappings, so observation metrics also rigorously avoid representations like `0.0`, `1.0`, or `100.0` (using `0.01` and `99.99`).
+- **Universal Safety Clamp:** `_generate_observation()` enforces openenv.yaml bounds on ALL fields (e.g., `0.01` to `99.99`).
+- **Reward Clamping:** `_compute_final_reward()` returns `round(max(0.01, min(0.99, normalised)), 2)`. Ensures no `0.0` or `1.0` is ever returned.
+- **Deterministic RNG:** Uses `self.rng = random.Random(seed)` internally.
+- **Cascading State:** Decisions in early stages (PR/Build) impact Stage 4 metrics (latency, error rates).
+
+### `server/app.py` (The Validator Entry Point)
+- **CRITICAL:** `pyproject.toml` declares `server = "server.app:main"`.
+- Implements a standalone grading harness with a deterministic baseline policy.
+- Uses **exact task names** from `openenv.yaml` (e.g., "PR Triage").
+- All tasks reset with `seed=42` for parity with `inference.py`.
+- Emits standardized logs: `[START] task="Task Name"`, `[STEP] ...`, `[END] task="Task Name" score=0.XXXX`.
 
 ### `inference.py` (The LLM Evaluation Runner)
-- Iterates sequentially through **5 Tasks** using `seed=42 + i` to aggressively shuffle scenario pools per task.
-- Strict timeout handlers: `signal.alarm(35)` per LLM call, and a `17.5 minute` wall-clock hard loop breaker. 
-- Emits exact, precise `[START]`, `[STEP]`, and `[END]` logging syntax.
-- **Validator Safety:** Explicitly never prints any timeout traces to stdout; it strictly silences API drops and relies correctly on the `success=true/false` payload on the `[END]` syntax.
-
-### `Dockerfile`
-- Implements `ENV PYTHONUNBUFFERED=1` to guarantee native real-time string flushing to the evaluator stdout parsing regex.
-- Executes securely as `USER 1000` (`useradd user`) per HuggingFace security best practices.
+- Iterates through 5 Tasks using `seed=42`.
+- Standardized logging format identical to `server/app.py`.
+- **Safety:** Import-time crashes avoided by moving HF/API key checks into `main()`.
+- **Clamping:** Explicitly clamps rewards before printing in `[STEP]` and `[END]` logs.
 
 ### `openenv.yaml` (The Schema)
-- Specifies exactly the 5 tasks, difficulty rankings, the baseline script, and observation schemas.
-- `score_range` correctly mirrors the backend mapping: `[0.01, 0.99]`.
+- `spec_version: 1`, `reward_range: [0.01, 0.99]`
+- 5 tasks with matching `score_range`.
+- Graders: `deterministic_pipeline` and `deterministic_pipeline_with_recovery`.
 
-### `static/index.html` (The Live Cinematic UI)
-- The FastAPI integration serves this UI at `localhost:7860/` natively.
-- Features a **Cinematic Intelligence Dashboard** with deep glassmorphism (`backdrop-filter: blur`), progressive state UI, and a **Live Telemetry Graph** built via `Chart.js`.
-- It includes a **Typewriter Effect Engine** that actively types out the LLM's raw reasoning.
-- Because of the Phase 2 boundary clamps, the UI relies on `>= 0.99` and `<= 0.01` float tracking to render Optimal/Catastrophic colors.
+---
 
-### `tests/test_grader.py` (The Validation Suite)
-- Located safely within a modularized `tests/` directory (with `__init__.py`).
-- Iterates through **all 14 scenarios**. Asserts `0.01 <= reward <= 0.99`.
+## 3. Recently Fixed Bugs (Final Stabilization)
 
-### OpenEnv Validator Bypasses (`uv.lock`, `pyproject.toml`, `server/app.py`)
-- **CRITICAL:** Do NOT delete `uv.lock`, `pyproject.toml`, or `server/app.py`.
-- To bypass the `openenv validate` pre-runner script without destroying our native Dockerfile structure, we implemented a dummy `server/app.py` endpoint wrapper. The `.lock` isolates determinism metrics.
+| # | Bug | Root Cause | Fix |
+|---|---|---|---|
+| 7 | **Invalid [END] Format** | Missing `task=` and `score=` fields in logs. | Updated both scripts to emit `[END] task="..." score=0.XXXX`. |
+| 8 | **Task Name Mismatch** | Used safe/slugified names (e.g. `pr_triage`). | Switched to exact names from `openenv.yaml` (e.g. `PR Triage`). |
+| 9 | **Seed Inconsistency** | `server/app.py` used sequential seeds (42, 43...). | Aligned all tasks in both scripts to use `seed=42`. |
+| 10 | **Module-level Crash** | `raise ValueError` if HF_TOKEN missing on import. | Moved check inside `main()`; prints error instead of crashing. |
+| 11 | **Reward Leakage** | `[STEP]` log printed raw un-clamped rewards. | Added explicit `safe_reward` clamping before every print. |
 
-## 3. Important Context If You Are Asked to Edit
+---
 
-- **Do NOT break deterministic isolated RNG.** Always use `self.rng` inside `environment.py`. Never use global `random`.
-- **Do NOT return 0.0 or 1.0.** Keep rewards deeply clamped inside `[0.01, 0.99]` and observation bounds tightly away from integer representations.
-- **Do NOT fallback API URLs.** `inference.py` must use strict `os.environ["API_BASE_URL"]`. Hardcoding OpenAI directly will bypass the judging LiteLLM proxy and instantly fail the submission!
-- **Do NOT delete `uv.lock` or `server/app.py`.** 
-- **Do NOT break the logging syntax in `inference.py`**. The hackathon dashboard parses `[START]`, `[STEP]` and `[END]` using strict, unyielding regex mapping.
-- **Do NOT refactor the Incremental Rewards.** The UI frontend perfectly depends on cumulative scalars mid-episode. Do not attempt a standard RL step-delta mapping!
+## 4. Important Constraints — Read Before Editing
 
-*You are completely up to speed. Validate the user requests directly against these constraints.*
+- **Do NOT break the logging syntax.** The validator parses `[START]`, `[STEP]`, `[END]` with strict regex.
+- **Do NOT return `0.0` or `1.0`.** Rewards and scores must be strictly in `[0.01, 0.99]`.
+- **Do NOT mismatch Task Names.** Task strings in `inference.py` and `server/app.py` must match `openenv.yaml` exactly.
+- **Always maintain `seed=42`.** This is our "gold standard" for reproducibility.
+- **Zero leakage.** `info` dict must always be `{}` in `env.step()`.
+
+*The repository is currently in its most stable and compliant state.*

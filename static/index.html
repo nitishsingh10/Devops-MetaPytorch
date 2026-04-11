@@ -271,6 +271,7 @@
     </div>
     <div class="header-controls">
       <div class="live-text"><div class="live-dot"></div> Env Live</div>
+      <button class="btn-sys" onclick="document.getElementById('analytics-overlay').style.display='flex'">Model Analytics</button>
       <button class="btn-sys" onclick="document.getElementById('shortcuts-overlay').style.display='flex'">Shortcuts</button>
       <button class="btn-sys" onclick="document.getElementById('codex-overlay').style.display='flex'">Codex Database</button>
       <button class="btn-sys mobile-sys-btn" onclick="document.querySelector('.col-left').style.display='flex'">Panels</button>
@@ -351,39 +352,19 @@
         <div id="timeline-summary" style="margin-top:12px; font-size:12px; font-weight:500; font-style:italic; color:var(--text-muted);"></div>
       </div>
 
-      <!-- F17 Live Telemetry (Tabbed) -->
+      <!-- F17 Standard Live Telemetry (No tabs internally) -->
       <div class="panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <div class="panel-title" style="margin-bottom:0;">Live Telemetry</div>
-          <div class="tab-controls">
-            <button class="tab-btn active" id="btn-chart-base" onclick="switchChartTab('base')">Standard</button>
-            <button class="tab-btn" id="btn-chart-exp" onclick="switchChartTab('expanded')">Expanded Analysis</button>
-          </div>
+        <div class="panel-title">Live Telemetry</div>
+        <div class="telemetry-grid">
+           <div class="chart-wrapper"><div class="chart-label">Error Rate</div><div class="chart-val color-red" id="val-err">—</div><canvas id="chart-err"></canvas></div>
+           <div class="chart-wrapper"><div class="chart-label">Latency ms</div><div class="chart-val color-cyan" id="val-lat">—</div><canvas id="chart-lat"></canvas></div>
+           <div class="chart-wrapper"><div class="chart-label">CPU Usage</div><div class="chart-val color-amber" id="val-cpu">—</div><canvas id="chart-cpu"></canvas></div>
+           <div class="chart-wrapper"><div class="chart-label">Traffic Load</div><div class="chart-val color-main" id="val-tra">—</div><canvas id="chart-tra"></canvas></div>
         </div>
-        
-        <!-- Standard Tab base metrics -->
-        <div id="chart-tab-base">
-          <div class="telemetry-grid">
-             <div class="chart-wrapper"><div class="chart-label">Error Rate</div><div class="chart-val color-red" id="val-err">—</div><canvas id="chart-err"></canvas></div>
-             <div class="chart-wrapper"><div class="chart-label">Latency ms</div><div class="chart-val color-cyan" id="val-lat">—</div><canvas id="chart-lat"></canvas></div>
-             <div class="chart-wrapper"><div class="chart-label">CPU Usage</div><div class="chart-val color-amber" id="val-cpu">—</div><canvas id="chart-cpu"></canvas></div>
-             <div class="chart-wrapper"><div class="chart-label">Traffic Load</div><div class="chart-val color-main" id="val-tra">—</div><canvas id="chart-tra"></canvas></div>
-          </div>
-          <div class="coverage-bar">
-            <span style="width:120px;">Code Coverage</span>
-            <div class="cov-blocks"><div class="threat-bar-fill bg-amber" id="cov-bar" style="width:0%;"></div></div>
-            <span id="cov-val" class="mono">—</span>
-          </div>
-        </div>
-
-        <!-- Expanded Analysis Tab metrics -->
-        <div id="chart-tab-expanded" class="hidden-initial">
-          <div class="telemetry-grid" style="margin-bottom:0;">
-             <div class="chart-wrapper"><div class="chart-label">Author Trust Metric</div><div class="chart-val color-green" id="val-exp-trust">—</div><canvas id="chart-exp-trust"></canvas></div>
-             <div class="chart-wrapper"><div class="chart-label">Coverage Progress </div><div class="chart-val color-green" id="val-exp-cov">—</div><canvas id="chart-exp-cov"></canvas></div>
-             <div class="chart-wrapper"><div class="chart-label">Files Changed</div><div class="chart-val color-cyan" id="val-exp-fc">—</div><canvas id="chart-exp-fc"></canvas></div>
-             <div class="chart-wrapper"><div class="chart-label">Tests Failed</div><div class="chart-val color-red" id="val-exp-tf">—</div><canvas id="chart-exp-tf"></canvas></div>
-          </div>
+        <div class="coverage-bar">
+          <span style="width:120px;">Code Coverage</span>
+          <div class="cov-blocks"><div class="threat-bar-fill bg-amber" id="cov-bar" style="width:0%;"></div></div>
+          <span id="cov-val" class="mono">—</span>
         </div>
       </div>
 
@@ -443,9 +424,12 @@
                <option value="4">4 — Nightmare</option>
              </select>
           </div>
-          <div class="ctrl-group" style="width: 80px;">
+          <div class="ctrl-group" style="width: 130px;">
              <label>Seed</label>
-             <input class="ctrl-input" type="number" id="seed-input" value="42">
+             <div style="display:flex; gap:4px;">
+               <input class="ctrl-input" type="number" id="seed-input" value="42" style="width:70px; padding:10px 8px;">
+               <button class="btn btn-sys" style="padding:10px 8px; flex:1;" onclick="document.getElementById('seed-input').value = Math.floor(Math.random() * 99999) + 1;" title="Randomize Seed" tabindex="-1">🎲</button>
+             </div>
           </div>
         </div>
         <button class="btn btn-primary" style="width:100%; margin-top: 8px;" id="btn-generate" onclick="generateEpisode()">Generate Episode</button>
@@ -531,6 +515,25 @@
       </div>
     </div>
   </main>
+
+  <!-- Expanded Analytics Overlay Modal (New implementation per instruction) -->
+  <div id="analytics-overlay" class="overlay" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal" style="max-width:900px; padding: 40px;">
+      <div class="panel-title" style="font-size:20px;">Model Run Analytics</div>
+      <p style="color:var(--text-muted); margin-bottom:24px; font-weight:500;">Comprehensive plotting records for the active episode's variables, allowing deep diagnostics for model trajectory.</p>
+      
+      <!-- Detailed charts grid -->
+      <div class="telemetry-grid" style="margin-bottom:0;">
+         <div class="chart-wrapper"><div class="chart-label">Author Trust Metric</div><div class="chart-val color-green" id="val-exp-trust">—</div><canvas id="chart-exp-trust"></canvas></div>
+         <div class="chart-wrapper"><div class="chart-label">Coverage Progress </div><div class="chart-val color-green" id="val-exp-cov">—</div><canvas id="chart-exp-cov"></canvas></div>
+         <div class="chart-wrapper"><div class="chart-label">Files Changed</div><div class="chart-val color-cyan" id="val-exp-fc">—</div><canvas id="chart-exp-fc"></canvas></div>
+         <div class="chart-wrapper"><div class="chart-label">Tests Failed</div><div class="chart-val color-red" id="val-exp-tf">—</div><canvas id="chart-exp-tf"></canvas></div>
+      </div>
+      <div style="text-align:right; margin-top:24px;">
+         <button class="btn btn-sys" onclick="document.getElementById('analytics-overlay').style.display='none'">Close Analytics</button>
+      </div>
+    </div>
+  </div>
 
   <!-- F3 SRE Overlay -->
   <div id="sre-overlay" class="overlay">
@@ -696,22 +699,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       setTimeout(() => { div.style.opacity = 0; setTimeout(()=>div.remove(), 300); }, 3000);
     }
 
-    // Tabs switching logic F5 F6
-    function switchChartTab(tab) {
-        document.getElementById('btn-chart-base').classList.remove('active');
-        document.getElementById('btn-chart-exp').classList.remove('active');
-        document.getElementById('chart-tab-base').classList.add('hidden-initial');
-        document.getElementById('chart-tab-expanded').classList.add('hidden-initial');
-
-        if(tab === 'base') {
-            document.getElementById('btn-chart-base').classList.add('active');
-            document.getElementById('chart-tab-base').classList.remove('hidden-initial');
-        } else {
-            document.getElementById('btn-chart-exp').classList.add('active');
-            document.getElementById('chart-tab-expanded').classList.remove('hidden-initial');
-        }
-    }
-
     function switchLogTab(tab) {
         document.getElementById('btn-log-ep').classList.remove('active');
         document.getElementById('btn-log-report').classList.remove('active');
@@ -758,7 +745,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         telemetryCharts.cpu = createC('chart-cpu', '#F2994A', cpuData, 100); 
         telemetryCharts.tra = createC('chart-tra', '#9B51E0', trafficData, 100); 
         
-        // Expanded telemetry F5
+        // Expanded telemetry (now housed inside Analytics Modal Overlay)
         telemetryCharts.extru = createC('chart-exp-trust', '#27AE60', expTrustData, 1);
         telemetryCharts.excov = createC('chart-exp-cov', '#27AE60', expCovData, 100);
         telemetryCharts.exfc  = createC('chart-exp-fc', '#2D9CDB', expFcData, 50); // files changed dynamic max
@@ -783,7 +770,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         document.getElementById('cov-bar').style.width = `${barW}%`;
         document.getElementById('cov-bar').className = `threat-bar-fill ${cov<60?'bg-red':cov>80?'bg-green':'bg-amber'}`;
         
-        // Update extended chart displays
+        // Update extended chart displays inside modal
         document.getElementById('val-exp-trust').innerText = `${(currentObs.author_trust_score||0).toFixed(2)}`;
         document.getElementById('val-exp-cov').innerText = `${cov.toFixed(1)}%`;
         document.getElementById('val-exp-fc').innerText = `${currentObs.pr_files_changed||0}`;
@@ -796,7 +783,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         Object.values(telemetryCharts).forEach(ch => ch.update());
     }
 
-    // F1 Threat Profile Grid Redesign (Bug/Enhancement #3)
     function updateThreatProfile() {
         if(!currentObs) return;
         let tp = document.getElementById('threat-profile');
@@ -845,7 +831,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
       const seed = document.getElementById('seed-input').value;
       const btn = document.getElementById('btn-generate');
       
-      // Reset pipeline formally before API call finishes (Bug/Enhancement #1)
       for(let i=1; i<=4; i++) {
           let el = document.getElementById(`pipe-${i}`);
           let c = el.querySelector('.node-circle');
@@ -856,7 +841,7 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
       btn.disabled = true; btn.innerHTML = 'Generating...';
       try {
-        switchLogTab('log'); // Switch back to live log tab automatically
+        switchLogTab('log'); 
         const data = await apiGet(`/reset?difficulty=${diff}&seed=${seed}`);
         prevObs = null; currentObs = data.observation; allObs = [JSON.parse(JSON.stringify(currentObs))];
         episodeActive = true; episodeDone = false; logEntries = [];
@@ -1017,7 +1002,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
                let v = currentObs[k];
                let nv = typeof v==='number' ? (Number.isInteger(v)?v:v.toFixed(2)) : Array.isArray(v)?v.join(', '):v;
                let cl = ''; let dt = '';
-               // Fix the percentage scale infinity issue (Bug #2)
                if(prevObs && prevObs[k] !== undefined && prevObs[k]!==v) {
                    cl = 'field-changed diff-left-slide';
                    if(typeof v==='number') {
@@ -1082,7 +1066,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
     function resetResultPanels() {
         document.getElementById('end-panels').classList.add('hidden-initial');
-        // document.getElementById('post-episode-content').classList.add('hidden-initial');
         document.getElementById('timeline-panel').classList.add('hidden-initial');
         document.getElementById('narrative-body').innerText = "(Episode must be completed to generate incident report)";
         document.getElementById('dna-string').innerText = "Sequence empty.";
@@ -1110,7 +1093,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
 
     function finalizeEpisode(totalReward) {
         if(totalReward>0.8) { try{ confetti({particleCount:100, spread:70, origin:{y:0.6}, colors:['#1E6E43', '#27AE60', '#E8F5E9']}); }catch(e){} }
-        // Note: The UI for Episode Report is combined inside the Mission Logs tab now matching F6 logic.
         
         let scMatch = (currentObs.episode_id||"").match(/s(\d+)/); let scObj = SCENARIOS.find(x=>x.id===`s${scMatch?scMatch[1]:''}`);
         
@@ -1125,7 +1107,6 @@ Respond with JSON: {"action": <0|1|2|3>, "reason": "brief explanation"}`;
         let acts = logEntries.map(l=>l.action).join(','); let rwds = logEntries.map(l=>l.reward.toFixed(2)).join(',');
         document.getElementById('dna-string').innerText = `DRC:d${currentObs.difficulty}:s${document.getElementById('seed-input').value}:a${acts}:r${rwds}`;
 
-        // Benchmark Leaderboard Update (Bug/Enhancement #4)
         document.getElementById('benchmark-panel').classList.remove('hidden-initial');
         let bench = [ 
            {n:'Llama 3.3 (Groq)', s:0.666, c:'var(--theme-primary)'}, 

@@ -831,6 +831,9 @@ class GraderEngine:
             if scenario_data.get("is_security_risk"):
                 return 0.10 if action in (1, 3) else 0.0
             if scenario_data.get("is_bug"):
+                opt = scenario_data.get("optimal", {}).get(1)
+                if opt == 0:
+                    return 0.10 if action in (0, 2) else 0.0
                 return 0.10 if action in (1, 2, 3) else 0.0
             # Clean
             return 0.10 if action == 0 else 0.0
@@ -890,6 +893,9 @@ class GraderEngine:
 
         if is_bug:
             if stage in (1, 2):
+                opt = scenario_data.get("optimal", {}).get(stage)
+                if opt == 0:
+                    return 0.10 if action in (0, 2) else 0.0
                 return 0.10 if action in (1, 2, 3) else 0.0
             # Later stages
             return 0.10 if action in (1, 2, 3) else 0.0
@@ -1024,7 +1030,7 @@ class DevOpsReleaseCmdEnv:
         """Return current state without modification."""
         return json.dumps(self._current_obs)
 
-    def step(self, action):
+    def step(self, action: int) -> tuple[str, float, bool, dict]:
         """
         Process action and return (obs_json, reward, done, info).
         CRITICAL: Entire method body is wrapped in try/except.
@@ -1088,6 +1094,10 @@ class DevOpsReleaseCmdEnv:
                 return self.state(), partial, False, info
 
             # ── Check if episode is done ──────────────────────
+            # Episode Terminations by Difficulty
+            # Easy (1): Terminates at Stage 1. Checks basic Code Review and PR analysis.
+            # Medium (2): Terminates at Stage 2. Adds CI/CD test and build constraints.
+            # Hard/Nightmare (3, 4): Extends to Stage 4 to require deep infra/metrics diagnostic.
             max_stages = {1: 1, 2: 2, 3: 4, 4: 4}
             max_s = max_stages.get(self._current_difficulty, 1)
 

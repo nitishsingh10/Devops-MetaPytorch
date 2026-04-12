@@ -22,3 +22,6 @@ server = "server.app:main"
 dev = [
     "pytest>=7.0.0"
 ]
+
+[tool.setuptools.packages.find]
+include = ["server*"]

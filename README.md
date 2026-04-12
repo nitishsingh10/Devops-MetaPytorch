@@ -28,17 +28,17 @@ caught the problem before it reached production.
 
 ## What Makes This Environment Unique
 
-### Pipeline State Propagation
+### 1. Pipeline State Propagation (Causal Reasoning Over Time)
+Most RL environments test **single-observation pattern matching**. You see a state, you calculate the optimal action, you get a score. 
 
-Bad decisions at early stages create **observable consequences** at later stages. Approve a risky PR at Stage 1 → cascading error rate spikes and latency inflation at Stage 4. The agent never learns *why* metrics are bad — it must learn to prevent cascading failures.
+The Release Commander tests **causal reasoning across time**. Bad decisions at early stages create **observable consequences** at later stages. If an agent blindly approves a risky PR at Stage 1, it will eventually face cascading error rate spikes and latency inflation at Stage 4. 
 
-### Human-in-the-Loop (HITL) Simulation — Stage 4b
+The agent never receives an observation explaining *why* the metrics are bad — it must learn through trial and error to trace the catastrophe back to its own sloppy code review. This is the property that elevates this environment from a simple classification task to a scientifically valuable RL benchmark.
 
-When an agent escalates (action=3) at Stage 3 or 4 in Hard+ scenarios,
-the environment does NOT terminate. Instead it injects a synthetic
-on-call SRE response into the observation. The agent must then decide
-whether to follow the expert or override — testing judgment under
-authority, not just pattern matching. No other OpenEnv environment has this.
+### 2. Human-in-the-Loop (HITL) Simulation — Stage 4b
+The most novel mechanic of the environment. When an agent escalates (action=3) a critical issue at Stage 3 or 4, the environment does NOT simply terminate or penalize. Instead, it transitions to **Stage 4b** and injects a synthetic on-call SRE response into the observation vector. 
+
+The agent must then read the `sre_response` text and decide whether to follow the human expert or override them — testing the LLM's judgment under authority and its ability to incorporate dynamic human context into a mechanical loop. No other OpenEnv submission has this capability.
 
 ---
 
@@ -120,6 +120,7 @@ All rewards are strictly clamped to **[0.01, 0.99]** — boundary values are exc
 ### Pipeline State Propagation
 
 This is the core novel mechanic. Bad decisions at early stages create **observable consequences** at later stages:
+This is the property that trains causal reasoning across time rather than single-observation pattern matching — making this environment scientifically valuable as an RL benchmark, not just a classification task.
 
 ```
 Stage 1: Approve risky PR → pr_approved_with_risk = True
@@ -162,9 +163,9 @@ graph LR
 | **S09** | 4 (Nightmare)| The Full Storm | DB full table scans, highest error rate | S4:Emergency Stop |
 | **S10** | 4 (Nightmare)| The Traitor | Ghost metrics and exfiltration | S4b:Rollback |
 | **S11** | 4 (Nightmare)| Deceptive Hotfix | Multi-step memory: missed DB migration + evasive `eval()` | S1:Reject *or* S4b:Rollback |
-| **S12** | 2 (Medium) | Infrastructure Drift | Config change deployed at peak traffic | S3:Canary |
-| **S13** | 3 (Hard) | Database Schema Lock | Clean code but crashes DB connections in prod | S4b:Rollback |
-| **S14** | 4 (Nightmare) | AI-Hallucinated PR | Metagame trap: "AI-generated" PR with bypassed edge cases | S1:Reject |
+| **S12** | 2 (Medium) | Infrastructure Drift | Config change at peak traffic | S3:Canary |
+| **S13** | 3 (Hard) | Database Schema Lock | Clean code but crashes DB in prod | S4b:Rollback |
+| **S14** | 4 (Nightmare) | AI-Hallucinated PR | AI-generated PR with bypassed edge cases | S1:Reject |
 
 ---
 
@@ -195,37 +196,9 @@ graph LR
 
 ---
 
-## 5. Human-in-the-Loop (HITL) Simulation
 
-When the agent chooses **action=3 (Escalate)** at Stage 3 or 4
-in Hard+ scenarios, the environment transitions to **Stage 4b**.
 
-### What happens at Stage 4b
-
-1. The observation includes all Stage 4 metrics plus an `sre_response` field
-2. The `sre_response` contains a synthetic on-call SRE's assessment
-3. The agent must decide whether to follow or override the SRE recommendation
-4. Overriding good SRE advice = minimum points for the optimal_action component
-
-### Example Stage 4b observation
-```json
-{
-  "stage": "4b",
-  "difficulty": 3,
-  "error_rate_pct": 2.45,
-  "cpu_pct": 87.3,
-  "latency_p99_ms": 1423.7,
-  "active_alerts": ["high_memory_usage", "P1: latency_degradation"],
-  "sre_response": "SRE: Confirmed memory leak in auth service.
-                   Recommend immediate rollback."
-}
-```
-
-The optimal action here is **1 (Rollback)** — following the SRE advice.
-
----
-
-## 6. Setup Instructions
+## 5. Setup Instructions
 
 ### Docker (Recommended)
 ```bash
@@ -310,6 +283,7 @@ Evaluated locally with `seed=42` across 5 tasks.
 | **Qwen 2.5** | 14B | 1.27 / 5.0 | 25.4% | 1 (Stage 2 Blocked) | 277.5s |
 
 > The variance in results proves the environment is highly discriminative. Smaller models tend to instinctually "Approve" (Action 0) without considering catastrophic cascading state, while larger models successfully detect security traps and reject them instantly.
+> *Note: Catastrophic failures enforce a minimum episodic boundary penalty of 0.01 instead of a true 0.0 to adhere strictly to the (0.00, 1.00) OpenEnv exclusion rules.*
 
 ---
 

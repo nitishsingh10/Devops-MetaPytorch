@@ -1,8 +1,8 @@
 """
 DevOps Release Commander — OpenEnv Server Entry Point
 =====================================================
-This serves the environment through the openenv-core framework,
-which the hackathon validator uses to evaluate task scores.
+This provides a standalone execution script for the environment
+that the hackathon automated validator can safely invoke.
 """
 
 import json
@@ -33,7 +33,7 @@ def main():
 
     for task in tasks:
         task_name = task["name"]
-        safe_name = task_name.replace(" ", "_").lower()
+
         difficulty = task["difficulty"]
         seed = task["seed"]
 
@@ -68,7 +68,7 @@ def main():
 
         success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 else "false"
         rewards_str = ",".join(f"{r:.2f}" for r in step_rewards) if step_rewards else "0.01"
-        print(f"[END] task={task_name} score={final_score:.4f}", flush=True)
+        print(f"[END] task={task_name} success={success_val} steps={step_num} rewards={rewards_str} score={final_score:.4f}", flush=True)
 
 
 def _baseline_policy(obs: dict) -> int:

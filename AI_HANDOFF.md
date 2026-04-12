@@ -8,6 +8,7 @@ Welcome, Assistant. If you are reading this, you are taking over or analysing th
 **Objective:** A fully compliant Reinforcement Learning environment built to the `OpenEnv` specification. It tasks an LLM with acting as a Senior Release Engineer through a 4-stage CI/CD pipeline (PR Triage, Build Gate, Deployment, Monitoring).
 
 Live on both GitHub (`nitishsingh10/Devops-MetaPytorch`) and HuggingFace Spaces (`rolex10/DevOps-Release-Commander`).
+*Note: A detailed map of the current directory tree sits in `FOLDER_STRUCTURE.txt` for rapid onboarding.*
 
 ## 2. Core Architecture & Critical Design Decisions
 
@@ -43,7 +44,7 @@ Live on both GitHub (`nitishsingh10/Devops-MetaPytorch`) and HuggingFace Spaces 
 |---|---|---|---|
 | 7 | **Invalid [END] Format** | Missing `task=` and `score=` fields in logs. | Updated both scripts to emit `[END] task="..." score=0.XXXX`. |
 | 8 | **Task Name Mismatch** | Used safe/slugified names (e.g. `pr_triage`). | Switched to exact names from `openenv.yaml` (e.g. `PR Triage`). |
-| 9 | **Seed Inconsistency** | `server/app.py` used sequential seeds (42, 43...). | Aligned all tasks in both scripts to use `seed=42`. |
+| 9 | **Seed Inconsistency** | Both scripts used `seed=42` for all tasks, causing tasks 4 and 5 (both difficulty=4) to draw the same scenario. | Both scripts now use sequential seeds [42, 43, 44, 45, 46] — one unique seed per task for broader scenario coverage. |
 | 10 | **Module-level Crash** | `raise ValueError` if HF_TOKEN missing on import. | Moved check inside `main()`; prints error instead of crashing. |
 | 11 | **Reward Leakage** | `[STEP]` log printed raw un-clamped rewards. | Added explicit `safe_reward` clamping before every print. |
 
@@ -54,7 +55,7 @@ Live on both GitHub (`nitishsingh10/Devops-MetaPytorch`) and HuggingFace Spaces 
 - **Do NOT break the logging syntax.** The validator parses `[START]`, `[STEP]`, `[END]` with strict regex.
 - **Do NOT return `0.0` or `1.0`.** Rewards and scores must be strictly in `[0.01, 0.99]`.
 - **Do NOT mismatch Task Names.** Task strings in `inference.py` and `server/app.py` must match `openenv.yaml` exactly.
-- **Always maintain `seed=42`.** This is our "gold standard" for reproducibility.
+- **Always use sequential seeds [42, 43, 44, 45, 46] per task.** Each task gets a unique seed for broad scenario coverage and reproducibility.
 - **Zero leakage.** `info` dict must always be `{}` in `env.step()`.
 
 *The repository is currently in its most stable and compliant state.*

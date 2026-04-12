@@ -101,8 +101,7 @@ def call_llm(client, obs_str):
 
 def main():
     if not HF_TOKEN:
-        print("[ERROR] Missing API key. Set HF_TOKEN, OPENAI_API_KEY, or API_KEY.", flush=True)
-        return
+        raise ValueError("Missing API key. Set HF_TOKEN, OPENAI_API_KEY, or API_KEY.")
 
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     env = DevOpsReleaseCmdEnv()
@@ -118,15 +117,17 @@ def main():
 
     start_total = time.time()
 
+    seeds = [42, 43, 44, 45, 46]
+
     for i, diff in enumerate(difficulties):
         task_id = i + 1
         task_name = task_names[i]
 
-        obs_str = env.reset(difficulty=diff, seed=42)
+        obs_str = env.reset(difficulty=diff, seed=seeds[i])
         step_num = 0
         done = False
         step_rewards = []
-        safe_task_name = task_name.replace(" ", "_").lower()
+
 
         # ── [START] structured log ────────────────────────────
         print(f"[START] task={task_name} env=devops_release_commander model={MODEL_NAME}", flush=True)
@@ -165,7 +166,7 @@ def main():
         success_val = "true" if step_rewards and step_rewards[-1] >= 0.5 and not is_timeout else "false"
         safe_rewards = [max(0.01, min(0.99, r)) for r in step_rewards]
         rewards_str = ",".join(f"{r:.2f}" for r in safe_rewards) if safe_rewards else "0.01"
-        print(f"[END] task={task_name} score={final_score:.4f}", flush=True)
+        print(f"[END] task={task_name} success={success_val} steps={step_num} rewards={rewards_str} score={final_score:.4f}", flush=True)
 
         results.append(
             {"task": task_name, "difficulty": diff, "reward": final_score}
